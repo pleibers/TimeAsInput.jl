@@ -1,0 +1,19 @@
+{
+    "name": "standard_lorenz",
+    "process_noise_level": 0.00,
+    "num_T": 15000,
+    "delta_T": 0.01,
+    "transient_T": 2000,
+    "PLOT": true,
+    "plot_title": "",
+    "SAVE": true,
+    "save_dir": "",
+    "num_trials": 50,
+    "MARKERS": false,
+    "p_change": [
+        "linear",
+        "linear",
+        "linear"
+    ],
+    "lorenz_trial_sys": "ExplodingLorenz"
+}
