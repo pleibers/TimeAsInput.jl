@@ -6,7 +6,7 @@
     "run": 1,
     "device": "cpu",
     "affine_transformation" : "linear",
-    "affine_transform_coeff" : [2.0,1.0],
+    "affine_transform_coeff" : [1.0,0.0],
     "model": "shallowPLRNN",
     "latent_dim": 3,
     "hidden_dim": 50,
