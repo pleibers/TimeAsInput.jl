@@ -5,3 +5,5 @@
 .vscode
 /Manifest.toml
 *.png
+*.bson
+Results/
