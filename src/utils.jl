@@ -1,4 +1,4 @@
 
 
-linear(a::Int,b::Int,t::Int) = a * x +b
-linear(A::AbstractVector, B::AbstractVector, t::Int) = A * t + B
+linear(a::Real,b::Real,t::Real) = a * t +b
+linear(A::AbstractVector, B::AbstractVector, t::Real) = A * t + B

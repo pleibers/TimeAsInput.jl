@@ -30,17 +30,13 @@ function main_training_routine(args::AbstractDict)
 
     # do the affine transformation of time, as only time itself is loaded
     if typeof(D) <: ExternalInputsDataset
-        affine_transform = Symbol(args["affine_transformation"])
         trans_coeff = args["affine_transform_coeff"]
+        affine_transformation = parse_transform(args["affine_transformation"], trans_coeff)
 
-        transform(t) = @eval $affine_transform(trans_coeff...,t)
-        @show transform(2)
-        sleep(10)
-        external_inputs = transform.(D.S[:,1]) # to have type consistency
+        external_inputs = Float32.(affine_transformation.(D.S[:,1])) # to have type consistency
         # probably need to make it a matrix
         ext_in = permutedims(reduce(hcat, external_inputs), (2,1))
-        @show size(ext_in)        
-        D = ExternalInputsDataset(D.X, external_inputs,"time_in")
+        D = ExternalInputsDataset(D.X, ext_in,"time_in")
     end
 
     # model

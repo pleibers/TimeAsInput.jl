@@ -9,14 +9,22 @@ function args()
         "--affine_transformation"
         help = "type of affine transformation"
         arg_type = String
-        default = defaults["affine_transformation"]
+        default = defaults["affine_transformation"] |> String
 
         "--affine_transform_coeff"
         help = "coefficients for the transform function"
-        arg_type = Vector{Any}
+        arg_type = Vector
         default = defaults["affine_transform_coeff"]
     end
     return settings
+end
+
+function parse_transform(a_t::String, coefficients::AbstractVector)
+    if a_t == "linear"
+        return t-> linear(coefficients...,t)
+    else
+        throw("Unsupported transformation $a_t")
+    end
 end
 
 commandline_parsing() = parse_args(args())
