@@ -43,7 +43,7 @@ end
 
 Evolve `z` in time for one step according to the model `m` (equation).
 
-External Inputs are used inside of the non stationarity
+External Inputs are used inside of the non linearity
 
 `z` is either a `M` dimensional column vector or a `M x S` matrix, where `S` is
 the batch dimension.
