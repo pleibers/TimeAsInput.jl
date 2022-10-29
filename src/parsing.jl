@@ -60,7 +60,7 @@ function initialize_model(args::AbstractDict, D::ExternalInputsDataset)
         model = deepPLRNN(M, Layers, N, K)
     elseif model_name == "shallowPLRNN"
         model = shallowPLRNN(M, hidden_dim, N, K)
-    elseif model ="nltPLRNN"
+    elseif model_name =="nltPLRNN"
         model = nltPLRNN(M,hidden_dim,N,K)
     end
 

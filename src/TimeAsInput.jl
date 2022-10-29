@@ -1,7 +1,9 @@
 module TimeAsInput
 
 include("utils.jl")
-export linear
+export linear, Maybe
+
+include("initialization.jl")
 
 include("nltPLRNN.jl")
 export nltPLRNN
