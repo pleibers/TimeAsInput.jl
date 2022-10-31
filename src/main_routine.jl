@@ -1,5 +1,7 @@
 using BPTT
 
+
+Float32(V::Vector{Float64}) = Float32.(V)
 """
     main_routine(args)
 
