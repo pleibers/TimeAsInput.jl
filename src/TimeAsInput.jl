@@ -9,7 +9,7 @@ include("nltPLRNN.jl")
 export nltPLRNN
 
 include("parsing.jl")
-export commandline_parsing, args, parse_transform
+export commandline_parsing, args_table, parse_transform
 
 include("main_routine.jl")
 export main_training_routine

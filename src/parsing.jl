@@ -69,7 +69,7 @@ function initialize_model(args::AbstractDict, D::ExternalInputsDataset)
 end
 
 
-function args()
+function args_table()
     settings = argtable()
     defaults = load_defaults()
     @add_arg_table! settings begin
@@ -94,4 +94,4 @@ function parse_transform(a_t::String, coefficients::AbstractVector)
     end
 end
 
-commandline_parsing() = parse_args(args())
+commandline_parsing() = parse_args(args_table())
