@@ -6,11 +6,15 @@ version = "0.1.0"
 [deps]
 ArgParse = "c7e460c6-2fb9-53a9-8c5b-16f535851c63"
 BPTT = "84beb053-a066-4ae9-8af9-707f5e1c390b"
-Benchmarks = "477c2568-c4f8-4ad5-9005-667adb27add6"
+Flux = "587475ba-b771-5e3f-ad9e-33799f191a9c"
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 NPZ = "15e1cf62-19b3-5cfa-8e77-841668bca605"
 Revise = "295af30f-e4ad-537b-8983-00126c2a3abe"
 
 [compat]
+Flux = "0.13"
+ArgParse = "1"
+Revise = "3"
 NPZ = "0.4"
 julia = "1"
 
