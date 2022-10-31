@@ -46,7 +46,7 @@ function ubermain(n_runs::Int)
         Argument("model", ["shallowPLRNN", "nltPLRNN"], "model"),
         Argument("weak_tf_alpha", [0.1, 0.05,0.15,0.3],"α"),
         Argument("hidden_dim", [20, 50,100], "H"),
-        Argument("affine_transform_coeff", [[10.0,1.0],[0.1,1.0],[0.01,1.0],[[0.1,0.1,0.1],[1.0,1.0,1.0]],[[0.1,0.1,0.1],[0.5,0.5,0.5]],[-0.1,0.1]],"tc")
+        Argument("affine_transform_coeff", [[0.1,1.0],[0.01,1.0],[[0.1,0.1,0.1],[1.0,1.0,1.0]],[[0.1,0.1,0.1],[0.5,0.5,0.5]],[-0.1,0.1]],"tc")
     ])
 
     # prepare tasks
