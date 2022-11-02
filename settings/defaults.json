@@ -1,8 +1,8 @@
 {
     "experiment": "external_inputs",
     "name": "grid_search",
-    "path_to_data": "data/benchmarks/ExplodingLorenz.npy",
-    "path_to_inputs": "data/time_data/time_ExplodingLorenz.npy",
+    "path_to_data": "data/benchmarks/ShiftingLorenz.npy",
+    "path_to_inputs": "data/time_data/time_ShiftingLorenz.npy",
     "run": 1,
     "device": "cpu",
     "affine_transformation" : "linear",

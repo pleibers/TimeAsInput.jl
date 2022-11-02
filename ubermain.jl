@@ -12,7 +12,7 @@ function parse_ubermain()
         "--runs", "-r"
         help = "Number of runs per experiment setting."
         arg_type = Int
-        default = 3
+        default = 2
     end
     return parse_args(s)
 end
@@ -44,9 +44,9 @@ function ubermain(n_runs::Int)
     # list arguments here
     args = BPTT.ArgVec([
         Argument("model", ["shallowPLRNN", "nltPLRNN"], "model"),
-        Argument("weak_tf_alpha", [0.1, 0.05,0.15,0.3],"α"),
+        Argument("weak_tf_alpha", [0.1, 0.15],"α"),
         Argument("hidden_dim", [20, 50,100], "H"),
-        Argument("affine_transform_coeff", [[0.1,1.0],[0.01,1.0],[[0.1,0.1,0.1],[1.0,1.0,1.0]],[[0.1,0.1,0.1],[0.5,0.5,0.5]],[-0.1,0.1]],"tc")
+        Argument("affine_transform_coeff", [[0.01,1.0],[[0.01,0.01,0.01],[1.0,1.0,1.0]],[[0.01,0.01,0.01],[0.0,0.0,0.0]],[-0.01,0.1]],"tc")
     ])
 
     # prepare tasks
