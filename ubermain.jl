@@ -44,9 +44,8 @@ function ubermain(n_runs::Int)
     # list arguments here
     args = BPTT.ArgVec([
         Argument("model", ["shallowPLRNN", "nltPLRNN"], "model"),
-        Argument("weak_tf_alpha", [0.1, 0.15],"α"),
-        Argument("hidden_dim", [20, 50,100], "H"),
-        Argument("affine_transform_coeff", [[0.01,1.0],[[0.01,0.01,0.01],[1.0,1.0,1.0]],[[0.01,0.01,0.01],[0.0,0.0,0.0]],[-0.01,0.1]],"tc")
+        Argument("hidden_dim", [50,100,500], "H"),
+        Argument("affine_transform_coeff", [[1.0,0.0],[1.0,1.0],[5.0,1.0]],"tc")
     ])
 
     # prepare tasks
