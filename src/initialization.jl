@@ -69,3 +69,10 @@ function initialize_L(M::Int, N::Int)
         L = uniform_init((M - N, N))
     end
 end
+
+function initialize_Ws(M, hidden_dim)
+    W₁ = uniform_init((M, hidden_dim))
+    W₂ = uniform_init((hidden_dim, M))
+    return W₁, W₂
+end
+

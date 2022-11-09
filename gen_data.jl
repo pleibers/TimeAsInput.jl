@@ -12,11 +12,12 @@ function main()
     name = args["name"]::String
 
     t = 0.0:ΔT:(num_T*ΔT)
-    t = normalize(collect(t))
-    time = reshape(t,length(t),1)
+    time = normalize(collect(t))
+    time = reshape(time,length(time),1)
 
     mkpath("data/time_data")
     npzwrite("data/time_data/time_$name.npy", time)
+    npzwrite("data/time_data/realtime_$name.npy", t)
 end
 
 main()

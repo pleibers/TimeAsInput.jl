@@ -32,13 +32,6 @@ function nltPLRNN(M::Int, hidden_dim::Int, N::Int, K::Int)
     return nltPLRNN(A, W₁, W₂, h₁, h₂, L, C)
 end
 
-function initialize_Ws(M, hidden_dim)
-    W₁ = uniform_init((M, hidden_dim))
-    W₂ = uniform_init((hidden_dim, M))
-    return W₁, W₂
-end
-
-
 """
     BPTT.PLRNNs.step(m::nltPLRNN, z::AbstractVecOrMat, s::AbstractVecOrMat)
 

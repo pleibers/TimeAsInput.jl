@@ -8,6 +8,9 @@ include("initialization.jl")
 include("nltPLRNN.jl")
 export nltPLRNN
 
+include("mlpPLRNN.jl")
+export mlpPLRNN
+
 include("parsing.jl")
 export commandline_parsing, args_table, parse_transform
 
