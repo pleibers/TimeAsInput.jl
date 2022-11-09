@@ -7,3 +7,4 @@
 *.png
 *.bson
 Results/
+data/snapshots/

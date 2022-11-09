@@ -35,7 +35,6 @@ function main_training_routine(args::AbstractDict)
         affine_transformation = parse_transform(args["affine_transformation"], trans_coeff)
 
         external_inputs = Float32.(affine_transformation.(D.S[:,1])) # to have type consistency
-        # probably need to make it a matrix
         ext_in = permutedims(reduce(hcat, external_inputs), (2,1))
         D = ExternalInputsDataset(D.X, ext_in,"time_in")
     end
