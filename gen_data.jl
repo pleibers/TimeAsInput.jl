@@ -4,7 +4,7 @@ using NPZ
 normalize(v::AbstractVector) = 2 .* (v .- minimum(v))./(maximum(v)-minimum(v)) .-1
 
 function main()
-    args = parse_commandline()
+    args = Benchmarks.parse_commandline()
     generate_benchmarks(args)
 
     num_T = args["num_T"]::Int

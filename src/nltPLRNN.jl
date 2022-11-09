@@ -3,7 +3,7 @@ using Flux: @functor, relu
 
 
 # shallowPLRNN with t in the non linearity
-mutable struct nltPLRNN{V<:AbstractVector,M<:AbstractMatrix} <: BPTT.AbstractPLRNN
+mutable struct nltPLRNN{V<:AbstractVector,M<:AbstractMatrix} <: BPTT.AbstractShallowPLRNN
     A::V
     W₁::M
     W₂::M
@@ -52,8 +52,4 @@ the batch dimension.
 """
 function BPTT.PLRNNs.step(m::nltPLRNN, z::AbstractVecOrMat, s::AbstractVecOrMat)
     return m.A .* z .+ m.W₁ * relu.(m.W₂ * z .+ m.h₂ .+ m.C * s) .+ m.h₁
-end
-
-function BPTT.PLRNNs.step(m::nltPLRNN,z::AbstractVecOrMat) 
-    return m.A .* z .+ m.W₁ * relu.(m.W₂ * z .+ m.h₂) .+ m.h₁
 end
