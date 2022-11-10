@@ -64,6 +64,10 @@ function initialize_model(args::AbstractDict, D::ExternalInputsDataset)
         model = nltPLRNN(M,hidden_dim,N,K)
     elseif model_name =="mlpPLRNN"
         model = mlpPLRNN(M,hidden_dim,N,K)
+    elseif model_name =="nlmlpPLRNN"
+        model = nlmlpPLRNN(M,hidden_dim,N,K)
+    elseif model_name =="highnlPLRNN"
+        model = highnlPLRNN(M,hidden_dim,N,K)
     end
 
     println("Model / # Parameters: $(typeof(model)) / $(num_params(model))")

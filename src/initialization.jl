@@ -76,3 +76,8 @@ function initialize_Ws(M, hidden_dim)
     return W₁, W₂
 end
 
+function initialize_Cs(M,hidden_dim, input_dim)
+    C₁ = uniform_init((M,hidden_dim))
+    C₂ = uniform_init((hidden_dim,input_dim))
+    return C₁, C₂
+end
