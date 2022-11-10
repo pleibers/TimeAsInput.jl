@@ -43,9 +43,7 @@ function ubermain(n_runs::Int)
 
     # list arguments here
     args = BPTT.ArgVec([
-        Argument("hidden_dim", [800,1000], "H"),
-        Argument("sequence_length",[1000,2500,800],"S"),
-        Argument("weak_tf_alpha",[0.1,0.3],"a")
+        Argument("path_to_data", ["data/benchmarks/StopBurstBN.npy", "data/benchmarks/StopBurstBN_dt.npy", "data/benchmarks/StopBurstBN_p1.npy","data/benchmarks/StopBurstBN_p5.npy","data/benchmarks/StopBurstBN_dt_p5.npy"])
     ])
 
     # prepare tasks
