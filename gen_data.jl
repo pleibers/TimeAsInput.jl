@@ -14,7 +14,9 @@ function main()
     t = 0.0:ΔT:(num_T*ΔT)
     time = normalize(collect(t))
     time = reshape(time,length(time),1)
-
+    if !isempty(args["exp_name"])
+        name=args["exp_name"]
+    end
     mkpath("data/time_data")
     npzwrite("data/time_data/time_$name.npy", time)
     npzwrite("data/time_data/realtime_$name.npy", t)

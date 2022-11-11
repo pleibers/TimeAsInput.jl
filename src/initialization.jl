@@ -41,6 +41,12 @@ function uniform_init(shape::Tuple; eltype::Type{T} = Float32) where {T <: Abstr
     return uniform(shape, -r, r)
 end
 
+function uniform_init(n_in,n_out; eltype::Type{T} = Float32) where {T <: AbstractFloat}
+    din = Float32(n_out)
+    r = 1 / √din
+    return uniform((n_in,n_out), -r, r)
+end
+
 """
     uniform_threshold_init(shape, Dataset)
 
