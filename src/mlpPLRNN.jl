@@ -4,8 +4,8 @@ using Flux
 
 function build_mlp(; n_hidden=32, n_input=1, n_output=3)
     return Chain(
-        Dense(n_input => n_hidden, relu, init=uniform_init(n_input,n_output)),
-        Dense(n_hidden => n_output,init=uniform_init(n_input,n_output)))
+        Dense(n_input => n_hidden, relu, init=uniform_init),
+        Dense(n_hidden => n_output,init=uniform_init))
 end
 
 mutable struct mlpPLRNN{V<:AbstractVector,M<:AbstractMatrix,NN<:Flux.Chain} <: AbstractShallowPLRNN

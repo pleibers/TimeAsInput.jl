@@ -12,7 +12,7 @@ function parse_ubermain()
         "--runs", "-r"
         help = "Number of runs per experiment setting."
         arg_type = Int
-        default = 1
+        default = 2
     end
     return parse_args(s)
 end
@@ -43,7 +43,7 @@ function ubermain(n_runs::Int)
 
     # list arguments here
     args = BPTT.ArgVec([
-        Argument("path_to_data", ["data/benchmarks/StopBurstBN.npy", "data/benchmarks/StopBurstBN_dt.npy", "data/benchmarks/StopBurstBN_p1.npy","data/benchmarks/StopBurstBN_p5.npy","data/benchmarks/StopBurstBN_dt_p5.npy"],"d")
+        Argument("path_to_data", ["data/benchmarks/StopBurstBN_dt.npy", "data/benchmarks/StopBurstBN_dt_p5.npy"],"d")
     ])
 
     # prepare tasks
