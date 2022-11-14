@@ -24,7 +24,7 @@
     "gradient_clipping_norm": 10.0,
     "teacher_forcing_interval": 16,
     "batches_per_epoch": 50,
-    "scalar_saving_interval": 1,
+    "scalar_saving_interval": 50,
     "image_saving_interval": 100,
     "gaussian_noise_level": 0.05,
     "D_stsp_bins": 30,

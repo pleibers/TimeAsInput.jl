@@ -6,6 +6,11 @@ using Measures
 using JSON
 using BSON: load
 
+function plot3dseries(tseries, title, t; legend=false)
+    l_b = legend ? true : nothing
+    plot3d(tseries[:,1], tseries[:,2],tseries[:,3], title=title, lc=(:viridis), linez=t, xlabel="X", ylabel="Y", zlabel="Z", label=nothing, legend=l_b)
+end
+
 # include("src/TimeAsInput.jl")
 # using .TimeAsInput
 Base.Float32(V::Vector{Float64}) = Base.Float32.(V)
@@ -40,7 +45,7 @@ function evaluate_snapshots(Results_path::String, model_name::String, name::Stri
 
     external_inputs = Float32.(affine_transformation.(time_data)) # to have type consistency
     ext_in = permutedims(reduce(hcat, external_inputs), (2, 1))
-
+    println("generating...")
     ts_0 = gen_at_t(model, 1, ext_in)
     ts_T = gen_at_t(model, size(ext_in, 1), ext_in)
     _, ts_a = generate(model, [0.5, 0.5, 0.5], ext_in,15000)
@@ -62,12 +67,13 @@ function evaluate_snapshots(Results_path::String, model_name::String, name::Stri
 
     # Txt = ["klx = $(round(klx[i],digits=5))" for i in axes(klx,1)]
     # push!(Txt, "")
+    println("plotting...")
     ps = (plot3d(ts[i][1:end, 1], ts[i][1:end, 2], ts[i][1:end, 3], 
-            grid=:show, lc=cgrad(:viridis), line_z=1:1:15000, legend=nothing) 
+            grid=:show, lc=cgrad(:viridis), line_z=1:1:size(ext_in,1), legend=nothing) 
             #,annotations=((0.0,1.25), Txt[i])) 
             for i in axes(ts, 1))
 
-    h2 = scatter([0, 0], [0, 1], line_z=1:1:15000,
+    h2 = scatter([0, 0], [0, 1], line_z=1:1:size(ext_in,1),
         xlims=(1, 1.1), label=nothing, c=:viridis, colorbar_title="\ntime", framestyle=:none)
 
     l = @layout [grid(2, 2) a{0.035w}]
@@ -77,6 +83,7 @@ function evaluate_snapshots(Results_path::String, model_name::String, name::Stri
         right_margin=3.0Plots.mm)
     mkpath("Figures/evaluation/")
     savefig(p, "Figures/evaluation/$name _snapshots.png")
+    println("done!")
     return nothing
 end
 
@@ -136,6 +143,43 @@ end
 
 # evaluate_snapshots("Results/external_inputs/ExplodingLorenz_nlt/001/","last_model.bson", "nltPLRNN_exploding", "ExplodingLorenz", "data/snapshots/")
 # evaluate_snapshots("Results/external_inputs/ShiftingLorenz_nlt/002/","last_model.bson", "nltPLRNN_Shifting", "ShiftingLorenz", "data/snapshots/")
+# evaluate_snapshots("Results/external_inputs/StopBurstBN_nlt/","last_model.bson", "nltPLRNN_SBBN", "StopBurstBN", "data/snapshots/")
 
 
-compare_nlt_shallow("Results/external_inputs/Compare_nlt_shallow/", "ShiftingLorenz")
+# compare_nlt_shallow("Results/external_inputs/Compare_nlt_shallow/", "ShiftingLorenz")
+
+function check_around_snapshots(Results_path::String, model_name::String, data_system::String)
+    model_path = Results_path*model_name
+    args_path = Results_path*"args.json"
+
+    args = convert_to_Float32(JSON.parsefile(args_path))
+    model = load_model_(model_path)
+
+    og_data = npzread("data/benchmarks/$data_system.npy")
+    time_data = npzread("data/time_data/time_$data_system.npy")
+    @assert time_data[1] == -1 "data not normalized"
+
+    trans_coeff = args["affine_transform_coeff"]
+    affine_transformation = parse_transform(args["affine_transformation"], trans_coeff)
+
+    external_inputs = Float32.(affine_transformation.(time_data)) # to have type consistency
+    ext_in = permutedims(reduce(hcat, external_inputs), (2, 1))
+
+    _, ts_a = generate(model, [0.5, 0.5, 0.5], ext_in,15000)
+    # display(plot3dseries(ts_a, "all", ext_in))    
+    for i in [1,10,100,1000,8000]
+        ts_0 = gen_at_t(model, i, ext_in)
+        ts_T = gen_at_t(model, size(ext_in, 1)-i, ext_in)
+        title0 = "t=$i"
+        titleT = "t=$(size(ext_in, 1)-i)"
+        p_0 = plot3dseries(ts_0, nothing, ext_in)
+        p_T = plot3dseries(ts_T, nothing,ext_in)
+        p_c = plot(p_0,p_T, title=[title0 titleT], legend=nothing)
+        display(p_c)
+    end
+end
+
+
+# check_around_snapshots("Results/external_inputs/ShiftingLorenz_nlt/002/", "last_model.bson","ShiftingLorenz")
+# check_around_snapshots("Results/external_inputs/ExplodingLorenz_nlt/001/","last_model.bson","ExplodingLorenz")
+check_around_snapshots("Results/external_inputs/StopBurstBN_nlt/", "last_model.bson", "StopBurstBN")
