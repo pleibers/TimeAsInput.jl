@@ -1,12 +1,15 @@
 {
     "experiment": "external_inputs",
-    "name": "StopBN_mlp",
-    "path_to_data": "data/benchmarks/StopBurstBN_dt.npy",
-    "path_to_inputs": "data/time_data/time_StopBurstBN_dt.npy",
+    "name": "StopBN",
+    "path_to_data": "data/benchmarks/StopBurstBN.npy",
+    "path_to_inputs": "data/time_data/time_StopBurstBN.npy",
     "run": 1,
     "device": "cpu",
-    "affine_transformation" : "linear",
-    "affine_transform_coeff" : [1.0,0.0],
+    "affine_transformation": "linear",
+    "affine_transform_coeff": [
+        1.0,
+        0.0
+    ],
     "model": "mlpPLRNN",
     "latent_dim": 3,
     "hidden_dim": 1200,
