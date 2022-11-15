@@ -5,6 +5,6 @@
 .vscode
 /Manifest.toml
 *.png
-*.bson
-Results/
+*plots/
+*checkpoints/
 data/snapshots/

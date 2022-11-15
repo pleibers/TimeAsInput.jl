@@ -5,6 +5,8 @@ using NPZ: npzread
 using Measures
 using JSON
 using BSON: load
+using Flux
+
 
 function plot3dseries(tseries, title, t; legend=false)
     l_b = legend ? true : nothing
@@ -22,10 +24,10 @@ function convert_to_Float32(dict::Dict)
 end
 load_model_(path::String) = load(path, @__MODULE__)[:model]
 
-function gen_at_t(plrnn::AbstractShallowPLRNN, t::Int, time::AbstractMatrix)
+function gen_at_t(plrnn::AbstractShallowPLRNN, t::Int, time::AbstractMatrix,og_data)
     time_input = similar(time)
     time_input .= time[t,1]
-    _, tseries = generate(plrnn, [0.5, 0.5, 0.5],time_input, size(time_input,1))
+    _, tseries = generate(plrnn, og_data[1,:],time_input, size(time_input,1))
     return tseries
 end
 
@@ -46,10 +48,9 @@ function evaluate_snapshots(Results_path::String, model_name::String, name::Stri
     external_inputs = Float32.(affine_transformation.(time_data)) # to have type consistency
     ext_in = permutedims(reduce(hcat, external_inputs), (2, 1))
     println("generating...")
-    ts_0 = gen_at_t(model, 1, ext_in)
-    ts_T = gen_at_t(model, size(ext_in, 1), ext_in)
-    _, ts_a = generate(model, [0.5, 0.5, 0.5], ext_in,15000)
-
+    ts_0 = gen_at_t(model, 1, ext_in,og_data)
+    ts_T = gen_at_t(model, size(ext_in, 1), ext_in,og_data)
+    _, ts_a = generate(model, og_data[1,:], ext_in,size(ext_in,1))
     ts = [ts_0, ts_T, ts_a, og_data]
 
     snap_path = snapshots_path*"snaps_$data_system"
@@ -101,6 +102,7 @@ function compare_nlt_shallow(path::String, data_system::String)
 
     external_inputs = Float32.(affine_transformation.(time_data)) # to have type consistency
     ext_in = permutedims(reduce(hcat, external_inputs), (2, 1))
+    @show size(ext_in)
 
     tss_nlt = []
     tss_shallow = []
@@ -111,8 +113,8 @@ function compare_nlt_shallow(path::String, data_system::String)
         shallow = load_model_(path*"compare$run/shallow.bson")
 
 
-        _, ts_nlt = generate(nlt, [0.5, 0.5, 0.5], ext_in,15000)
-        _, ts_shallow = generate(shallow, [0.5,0.5,0.5], ext_in, 15000)
+        _, ts_nlt = generate(nlt, og_data[1,:], ext_in,15000)
+        _, ts_shallow = generate(shallow, og_data[1,:], ext_in, 15000)
 
         push!(tss_nlt, ts_nlt)
         push!(tss_shallow)
@@ -141,16 +143,9 @@ function compare_nlt_shallow(path::String, data_system::String)
     savefig(comp_p, "Figures/evaluation/Compare_nlt_shallow_$run.png")
 end
 
-# evaluate_snapshots("Results/external_inputs/ExplodingLorenz_nlt/001/","last_model.bson", "nltPLRNN_exploding", "ExplodingLorenz", "data/snapshots/")
-# evaluate_snapshots("Results/external_inputs/ShiftingLorenz_nlt/002/","last_model.bson", "nltPLRNN_Shifting", "ShiftingLorenz", "data/snapshots/")
-# evaluate_snapshots("Results/external_inputs/StopBurstBN_nlt/","last_model.bson", "nltPLRNN_SBBN", "StopBurstBN", "data/snapshots/")
-
-
-# compare_nlt_shallow("Results/external_inputs/Compare_nlt_shallow/", "ShiftingLorenz")
-
 function check_around_snapshots(Results_path::String, model_name::String, data_system::String)
-    model_path = Results_path*model_name
-    args_path = Results_path*"args.json"
+    model_path = Results_path * model_name
+    args_path = Results_path * "args.json"
 
     args = convert_to_Float32(JSON.parsefile(args_path))
     model = load_model_(model_path)
@@ -165,21 +160,40 @@ function check_around_snapshots(Results_path::String, model_name::String, data_s
     external_inputs = Float32.(affine_transformation.(time_data)) # to have type consistency
     ext_in = permutedims(reduce(hcat, external_inputs), (2, 1))
 
-    _, ts_a = generate(model, [0.5, 0.5, 0.5], ext_in,15000)
+    _, ts_a = generate(model, og_data[1,:], ext_in, size(ext_in,1))
     # display(plot3dseries(ts_a, "all", ext_in))    
-    for i in [1,10,100,1000,8000]
-        ts_0 = gen_at_t(model, i, ext_in)
-        ts_T = gen_at_t(model, size(ext_in, 1)-i, ext_in)
+    for i in [1, 10, 100, 1000, 8000]
+        ts_0 = gen_at_t(model, i, ext_in,og_data)
+        ts_T = gen_at_t(model, size(ext_in, 1) - i, ext_in,og_data)
         title0 = "t=$i"
         titleT = "t=$(size(ext_in, 1)-i)"
         p_0 = plot3dseries(ts_0, nothing, ext_in)
-        p_T = plot3dseries(ts_T, nothing,ext_in)
-        p_c = plot(p_0,p_T, title=[title0 titleT], legend=nothing)
-        display(p_c)
+        p_T = plot3dseries(ts_T, nothing, ext_in)
+        p_c = plot(p_0, p_T, title=[title0 titleT], legend=nothing)
+        savefig(p_c, "snap_$i.png")
     end
 end
+# -------------------------------------------------------------------------------------------
+# Evaluations
+
+# compare_nlt_shallow("Results/external_inputs/Compare_nlt_shallow/", "ShiftingLorenz")
+
+
+# evaluate_snapshots("Results/external_inputs/ExplodingLorenz_nlt/001/","last_model.bson", "nltPLRNN_exploding", "ExplodingLorenz", "data/snapshots/")
+# evaluate_snapshots("Results/external_inputs/ShiftingLorenz_nlt/002/","last_model.bson", "nltPLRNN_Shifting", "ShiftingLorenz", "data/snapshots/")
+
+# evaluate_snapshots("Results/external_inputs/StopBurstBN_nlt/","last_model.bson", "nltPLRNN_SBBN", "StopBurstBN", "data/snapshots/")
+# evaluate_snapshots("Results/external_inputs/StopBurstBN_nlt/","4050.bson", "nltPLRNN_SBBN_2", "StopBurstBN", "data/snapshots/")
+# evaluate_snapshots("Results/external_inputs/StopBurstBN_mlp/","last_model.bson", "mlpPLRNN_SBBN", "StopBurstBN", "data/snapshots/")
+
+
+# evaluate_snapshots("Results/external_inputs/ShrinkingLorenz_nlt/","last_model.bson", "nltPLRNN_ShrinkingLorenz", "ShrinkingLorenz", "data/snapshots/")
+# evaluate_snapshots("Results/external_inputs/ShrinkingLorenz_nlt/","pre_last.bson", "nltPLRNN_ShrinkingLorenz_2", "ShrinkingLorenz", "data/snapshots/")
+# evaluate_snapshots("Results/external_inputs/ShrinkingLorenz_nlt/","preprelast.bson", "nltPLRNN_ShrinkingLorenz_3", "ShrinkingLorenz", "data/snapshots/")
 
 
 # check_around_snapshots("Results/external_inputs/ShiftingLorenz_nlt/002/", "last_model.bson","ShiftingLorenz")
 # check_around_snapshots("Results/external_inputs/ExplodingLorenz_nlt/001/","last_model.bson","ExplodingLorenz")
-check_around_snapshots("Results/external_inputs/StopBurstBN_nlt/", "last_model.bson", "StopBurstBN")
+# check_around_snapshots("Results/external_inputs/StopBurstBN_nlt/", "4050.bson", "StopBurstBN")
+# check_around_snapshots("Results/external_inputs/ShrinkingLorenz_nlt/","last_model.bson","ShrinkingLorenz")
+
