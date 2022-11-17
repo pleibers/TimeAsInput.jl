@@ -12,7 +12,7 @@ mutable struct nltPLRNN{V<:AbstractVector,M<:AbstractMatrix} <: BPTT.AbstractSha
     L::Union{M, Nothing}
     C::Union{M, Nothing}
 end
-@functor nltPLRNN
+@functor nltPLRNN (A, W₁, W₂, h₁,h₂,L)
 
 # initialization/constructor
 function nltPLRNN(M::Int, hidden_dim::Int, N::Int)

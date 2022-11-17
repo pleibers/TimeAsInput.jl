@@ -173,6 +173,22 @@ function check_around_snapshots(Results_path::String, model_name::String, data_s
         savefig(p_c, "snap_$i.png")
     end
 end
+
+function eval_wo_ext(model_path::String, data_system::String, fig::String)
+    og_data = npzread("data/benchmarks/$data_system.npy")
+    model = load_model_(model_path)
+    time_data = npzread("data/time_data/time_$data_system.npy")
+    time = zeros(size(time_data))
+    ts = Matrix(gen_at_t(model, 1, time, og_data))
+    p = plot3d(ts[:, 1], ts[:, 2], ts[:, 3], label="0.5")
+    for i in 0:10
+        time = time .- 1 .+ i * 0.2
+        ts = Matrix(gen_at_t(model, 1, time, og_data))
+        plot3d!(ts[:, 1], ts[:, 2], ts[:, 3], label="$(round((i*0.2)/2,digits=1))")
+    end
+    savefig(p, "Figures/evaluation/$fig _$data_system.png")
+end
+    
 # -------------------------------------------------------------------------------------------
 # Evaluations
 
@@ -186,7 +202,6 @@ end
 # evaluate_snapshots("Results/external_inputs/StopBurstBN_nlt/","4050.bson", "nltPLRNN_SBBN_2", "StopBurstBN", "data/snapshots/")
 # evaluate_snapshots("Results/external_inputs/StopBurstBN_mlp/","last_model.bson", "mlpPLRNN_SBBN", "StopBurstBN", "data/snapshots/")
 
-
 # evaluate_snapshots("Results/external_inputs/ShrinkingLorenz_nlt/","last_model.bson", "nltPLRNN_ShrinkingLorenz", "ShrinkingLorenz", "data/snapshots/")
 # evaluate_snapshots("Results/external_inputs/ShrinkingLorenz_nlt/","pre_last.bson", "nltPLRNN_ShrinkingLorenz_2", "ShrinkingLorenz", "data/snapshots/")
 # evaluate_snapshots("Results/external_inputs/ShrinkingLorenz_nlt/","preprelast.bson", "nltPLRNN_ShrinkingLorenz_3", "ShrinkingLorenz", "data/snapshots/")
@@ -197,3 +212,6 @@ end
 # check_around_snapshots("Results/external_inputs/StopBurstBN_nlt/", "4050.bson", "StopBurstBN")
 # check_around_snapshots("Results/external_inputs/ShrinkingLorenz_nlt/","last_model.bson","ShrinkingLorenz")
 
+# eval_wo_ext("Results/external_inputs/StopBurstBN_nlt/last_model.bson", "StopBurstBN", "snapshots_bad")
+# eval_wo_ext("Results/external_inputs/StopBurstBN_nlt/4050.bson", "StopBurstBN", "snapshots_good")
+# eval_wo_ext("Results/external_inputs/ShrinkingLorenz_nlt/last_model.bson","ShrinkingLorenz","snapshots")
