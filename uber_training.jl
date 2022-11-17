@@ -43,7 +43,7 @@ function ubermain(n_runs::Int)
 
     # list arguments here
     args = BPTT.ArgVec([
-        Argument("path_to_data", ["data/benchmarks/StopBurstBN_dt.npy", "data/benchmarks/StopBurstBN_dt_p5.npy"],"d")
+        Argument("model", ["nltPLRNN", "mlpPLRNN"], "m")
     ])
 
     # prepare tasks
