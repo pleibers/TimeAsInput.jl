@@ -206,6 +206,12 @@ end
 # evaluate_snapshots("Results/external_inputs/ShrinkingLorenz_nlt/","pre_last.bson", "nltPLRNN_ShrinkingLorenz_2", "ShrinkingLorenz", "data/snapshots/")
 # evaluate_snapshots("Results/external_inputs/ShrinkingLorenz_nlt/","preprelast.bson", "nltPLRNN_ShrinkingLorenz_3", "ShrinkingLorenz", "data/snapshots/")
 
+evaluate_snapshots("Results/external_inputs/StopBurstBN_nlt_p1/","last_1.bson", "nltPLRNN_SBBN_p1", "StopBurstBN", "data/snapshots/")
+evaluate_snapshots("Results/external_inputs/StopBurstBN_nlt_p1/","last_2.bson", "nltPLRNN_SBBN__p1_2", "StopBurstBN", "data/snapshots/")
+evaluate_snapshots("Results/external_inputs/StopBurstBN_mlp_p1/","last_model.bson", "mlpPLRNN_SBBN_p1", "StopBurstBN", "data/snapshots/")
+evaluate_snapshots("Results/external_inputs/StopBurstBN_unc/", "last_model.bson", "nltPLRNN_SBBN_unc_1", "StopBurstBN", "data/snapshots/")
+evaluate_snapshots("Results/external_inputs/StopBurstBN_unc/", "2850.bson", "nltPLRNN_SBBN_unc_2", "StopBurstBN", "data/snapshots/")
+
 
 # check_around_snapshots("Results/external_inputs/ShiftingLorenz_nlt/002/", "last_model.bson","ShiftingLorenz")
 # check_around_snapshots("Results/external_inputs/ExplodingLorenz_nlt/001/","last_model.bson","ExplodingLorenz")
