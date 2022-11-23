@@ -3,7 +3,7 @@ using Flux: @functor, relu
 
 
 # shallowPLRNN with t in the non linearity
-mutable struct nltPLRNN{V<:AbstractVector,M<:AbstractMatrix} <: BPTT.AbstractShallowPLRNN
+mutable struct multiPLRNN{V<:AbstractVector,M<:AbstractMatrix} <: BPTT.AbstractShallowPLRNN
     A::V
     W₁::M
     W₂::M
@@ -12,24 +12,24 @@ mutable struct nltPLRNN{V<:AbstractVector,M<:AbstractMatrix} <: BPTT.AbstractSha
     L::Union{M, Nothing}
     C::Union{M, Nothing}
 end
-@functor nltPLRNN
+@functor multiPLRNN
 
 # initialization/constructor
-function nltPLRNN(M::Int, hidden_dim::Int, N::Int)
+function multiPLRNN(M::Int, hidden_dim::Int, N::Int)
     A, _, h₁ = initialize_A_W_h(M)
     h₂ = zeros(Float32, hidden_dim)
     W₁, W₂ = initialize_Ws(M, hidden_dim)
     L = initialize_L(M, N)
-    return nltPLRNN(A, W₁, W₂, h₁, h₂, L, nothing)
+    return multiPLRNN(A, W₁, W₂, h₁, h₂, L, nothing)
 end
 
-function nltPLRNN(M::Int, hidden_dim::Int, N::Int, K::Int)
+function multiPLRNN(M::Int, hidden_dim::Int, N::Int, K::Int)
     A, _, h₁ = initialize_A_W_h(M)
     h₂ = zeros(Float32, hidden_dim)
     W₁, W₂ = initialize_Ws(M, hidden_dim)
     L = initialize_L(M, N)
     C = uniform_init((M, K))
-    return nltPLRNN(A, W₁, W₂, h₁, h₂, L, C)
+    return multiPLRNN(A, W₁, W₂, h₁, h₂, L, C)
 end
 
 """
@@ -43,6 +43,6 @@ External Inputs are used inside of the non linearity
 the batch dimension.
 
 """
-function BPTT.PLRNNs.step(m::nltPLRNN, z::AbstractVecOrMat, s::AbstractVecOrMat)
-    return m.A .* z .+ m.W₁ * relu.(m.W₂ * (z.+ m.C * s) .+ m.h₂) .+ m.h₁
+function BPTT.PLRNNs.step(m::multiPLRNN, z::AbstractVecOrMat, s::AbstractVecOrMat)
+    return m.A .* z .+ m.W₁ * relu.(m.W₂ * z .+ m.h₂) * m.C*s .+ m.h₁
 end

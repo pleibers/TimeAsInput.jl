@@ -206,11 +206,11 @@ end
 # evaluate_snapshots("Results/external_inputs/ShrinkingLorenz_nlt/","pre_last.bson", "nltPLRNN_ShrinkingLorenz_2", "ShrinkingLorenz", "data/snapshots/")
 # evaluate_snapshots("Results/external_inputs/ShrinkingLorenz_nlt/","preprelast.bson", "nltPLRNN_ShrinkingLorenz_3", "ShrinkingLorenz", "data/snapshots/")
 
-evaluate_snapshots("Results/external_inputs/StopBurstBN_nlt_p1/","last_1.bson", "nltPLRNN_SBBN_p1", "StopBurstBN", "data/snapshots/")
-evaluate_snapshots("Results/external_inputs/StopBurstBN_nlt_p1/","last_2.bson", "nltPLRNN_SBBN__p1_2", "StopBurstBN", "data/snapshots/")
-evaluate_snapshots("Results/external_inputs/StopBurstBN_mlp_p1/","last_model.bson", "mlpPLRNN_SBBN_p1", "StopBurstBN", "data/snapshots/")
-evaluate_snapshots("Results/external_inputs/StopBurstBN_unc/", "last_model.bson", "nltPLRNN_SBBN_unc_1", "StopBurstBN", "data/snapshots/")
-evaluate_snapshots("Results/external_inputs/StopBurstBN_unc/", "2850.bson", "nltPLRNN_SBBN_unc_2", "StopBurstBN", "data/snapshots/")
+# evaluate_snapshots("Results/external_inputs/StopBurstBN_nlt_p1/","last_1.bson", "nltPLRNN_SBBN_p1", "StopBurstBN", "data/snapshots/")
+# evaluate_snapshots("Results/external_inputs/StopBurstBN_nlt_p1/","last_2.bson", "nltPLRNN_SBBN_p1_2", "StopBurstBN", "data/snapshots/")
+# evaluate_snapshots("Results/external_inputs/StopBurstBN_mlp_p1/","last_model.bson", "mlpPLRNN_SBBN_p1", "StopBurstBN", "data/snapshots/")
+# evaluate_snapshots("Results/external_inputs/StopBurstBN_nlt_unc/", "last_model.bson", "nltPLRNN_SBBN_unc_1", "StopBurstBN", "data/snapshots/")
+# evaluate_snapshots("Results/external_inputs/StopBurstBN_nlt_unc/", "2850.bson", "nltPLRNN_SBBN_unc_2", "StopBurstBN", "data/snapshots/")
 
 
 # check_around_snapshots("Results/external_inputs/ShiftingLorenz_nlt/002/", "last_model.bson","ShiftingLorenz")
@@ -221,3 +221,10 @@ evaluate_snapshots("Results/external_inputs/StopBurstBN_unc/", "2850.bson", "nlt
 # eval_wo_ext("Results/external_inputs/StopBurstBN_nlt/last_model.bson", "StopBurstBN", "snapshots_bad")
 # eval_wo_ext("Results/external_inputs/StopBurstBN_nlt/4050.bson", "StopBurstBN", "snapshots_good")
 # eval_wo_ext("Results/external_inputs/ShrinkingLorenz_nlt/last_model.bson","ShrinkingLorenz","snapshots")
+
+
+# eval_wo_ext("Results/external_inputs/StopBurstBN_nlt_p1/last_1.bson", "StopBurstBN", "snapss")
+eval_wo_ext("Results/external_inputs/StopBurstBN_nlt_p1/last_2.bson", "StopBurstBN", "snapss_nlt_p1")
+# eval_wo_ext("Results/external_inputs/StopBurstBN_mlp_p1/last_model.bson", "StopBurstBN", "snapss_mlp_p1")
+# eval_wo_ext("Results/external_inputs/StopBurstBN_nlt_unc/last_model.bson","StopBurstBN", "snapss_nlt_unc")
+# eval_wo_ext("Results/external_inputs/StopBurstBN_nlt_unc/2850.bson", "StopBurstBN", "snapss")

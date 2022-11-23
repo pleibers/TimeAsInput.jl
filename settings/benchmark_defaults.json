@@ -1,10 +1,10 @@
 {
-    "name": "RampUpBN",
+    "name": "PaperLorenzBigChange",
     "exp_name": "",
-    "process_noise_level": 0.01,
-    "num_T": 150000,
-    "delta_T": 0.05,
-    "transient_T": 500,
+    "process_noise_level": 0.00,
+    "T": 150,
+    "delta_T": 0.01,
+    "transient_T": 20,
     "p_change": "linear",
 
     "PLOT": true,
@@ -17,8 +17,5 @@
     "save_dir": "",
 
     "num_trials": 50,
-    "lorenz_trial_sys": "ShiftingLorenz",
-
-    "interactive":false,
-    "interactive_noise":0.0
+    "lorenz_trial_sys": "ShiftingLorenz"
 }

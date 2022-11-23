@@ -7,11 +7,11 @@ function main()
     args = Benchmarks.parse_commandline()
     generate_benchmarks(args)
 
-    num_T = args["num_T"]::Int
+    T = args["T"]::Int
     ΔT = args["delta_T"]::Float32
     name = args["name"]::String
 
-    t = 0.0:ΔT:(num_T*ΔT)
+    t = 0.0:ΔT:T
     time = normalize(collect(t))
     time = reshape(time,length(time),1)
     if !isempty(args["exp_name"])
