@@ -1,8 +1,8 @@
 {
     "experiment": "external_inputs",
-    "name": "StopBN_p1",
-    "path_to_data": "data/benchmarks/StopBurstBN_p1.npy",
-    "path_to_inputs": "data/time_data/time_StopBurstBN_p1.npy",
+    "name": "new_stop",
+    "path_to_data": "data/benchmarks/StopBurstBN.npy",
+    "path_to_inputs": "data/time_data/time_StopBurstBN.npy",
     "run": 1,
     "device": "cpu",
     "affine_transformation": "linear",
@@ -10,9 +10,9 @@
         1.0,
         0.0
     ],
-    "model": "multiPLRNN",
+    "model": "nltPLRNN",
     "latent_dim": 3,
-    "hidden_dim": 1200,
+    "hidden_dim": 1000,
     "weak_tf_alpha": 0.5,
     "batch_size": 16,
     "sequence_length": 350,
