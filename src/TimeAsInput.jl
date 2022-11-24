@@ -9,7 +9,10 @@ include("nltPLRNN.jl")
 export nltPLRNN
 
 include("mlpPLRNN.jl")
-export mlpPLRNN, nlmlpPLRNN, highnlPLRNN
+export mlpPLRNN
+
+include("multiPLRNN.jl")
+export multiPLRNN
 
 include("parsing.jl")
 export commandline_parsing, args_table, parse_transform
