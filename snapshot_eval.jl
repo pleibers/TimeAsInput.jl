@@ -224,7 +224,9 @@ end
 
 
 # eval_wo_ext("Results/external_inputs/StopBurstBN_nlt_p1/last_1.bson", "StopBurstBN", "snapss")
-eval_wo_ext("Results/external_inputs/StopBurstBN_nlt_p1/last_2.bson", "StopBurstBN", "snapss_nlt_p1")
+# eval_wo_ext("Results/external_inputs/StopBurstBN_nlt_p1/last_2.bson", "StopBurstBN", "snapss_nlt_p1")
 # eval_wo_ext("Results/external_inputs/StopBurstBN_mlp_p1/last_model.bson", "StopBurstBN", "snapss_mlp_p1")
 # eval_wo_ext("Results/external_inputs/StopBurstBN_nlt_unc/last_model.bson","StopBurstBN", "snapss_nlt_unc")
 # eval_wo_ext("Results/external_inputs/StopBurstBN_nlt_unc/2850.bson", "StopBurstBN", "snapss")
+
+# generate trajectory at t=5 and make a 3d plot
