@@ -1,7 +1,7 @@
 module TimeAsInput
 
 include("utils.jl")
-export linear
+export linear, train_test_split
 
 include("initialization.jl")
 

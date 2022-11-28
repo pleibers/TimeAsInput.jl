@@ -44,5 +44,5 @@ the batch dimension.
 
 """
 function BPTT.PLRNNs.step(m::multiPLRNN, z::AbstractVecOrMat, s::AbstractVecOrMat)
-    return m.A .* z .+ m.W₁ * relu.(m.W₂ * z .+ m.h₂) * m.C*s .+ m.h₁
+    return m.A .* z .+ m.C*s .* m.W₁ * relu.(m.W₂ * z .+ m.h₂) .+ m.h₁
 end

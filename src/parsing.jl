@@ -90,6 +90,11 @@ function args_table()
         help = "coefficients for the transform function"
         arg_type = Vector
         default = defaults["affine_transform_coeff"]
+
+        "--prediction"
+        help = "train on predition task"
+        arg_type = Bool
+        default = defaults["prediction"]
     end
     return settings
 end

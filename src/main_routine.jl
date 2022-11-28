@@ -37,6 +37,9 @@ function main_training_routine(args::AbstractDict)
         external_inputs = Float32.(affine_transformation.(D.S[:,1])) # to have type consistency
         ext_in = permutedims(reduce(hcat, external_inputs), (2,1))
         D = ExternalInputsDataset(D.X, ext_in,"time_in")
+        if args["prediction"]
+            D, D_test = train_test_split(D, TP_loc[get_model_from_path(args["path_to_data"])])
+        end
     end
 
     # model
