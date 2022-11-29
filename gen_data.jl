@@ -11,6 +11,10 @@ function main()
     ΔT = args["delta_T"]::Float32
     name = args["name"]::String
 
+    if occursin("Paper", args["name"])
+        T = 800
+    end
+    
     t = 0.0:ΔT:T
     time = normalize(collect(t))
     time = reshape(time,length(time),1)
