@@ -14,26 +14,23 @@ mutable struct mlpPLRNN{V<:AbstractVector,M<:AbstractMatrix,NN<:Flux.Chain} <: A
     W₂::M
     h₁::V
     h₂::V
-    L::Union{M,Nothing}
     mlp::Union{NN,Nothing}
 end
 @functor mlpPLRNN
 
-function mlpPLRNN(M::Int, hidden_dim::Int, N::Int, K::Int)
+function mlpPLRNN(M::Int, hidden_dim::Int, K::Int)
     A, _, h₁ = initialize_A_W_h(M)
     h₂ = zeros(Float32, hidden_dim)
     W₁, W₂ = initialize_Ws(M, hidden_dim)
-    L = initialize_L(M, N)
     mlp = build_mlp(n_input=K, n_output=M)
-    return mlpPLRNN(A, W₁, W₂, h₁, h₂, L, mlp)
+    return mlpPLRNN(A, W₁, W₂, h₁, h₂, mlp)
 end
 
-function mlpPLRNN(M::Int, hidden_dim::Int, N::Int)
+function mlpPLRNN(M::Int, hidden_dim::Int)
     A, _, h₁ = initialize_A_W_h(M)
     h₂ = zeros(Float32, hidden_dim)
     W₁, W₂ = initialize_Ws(M, hidden_dim)
-    L = initialize_L(M, N)
-    return mlpPLRNN(A, W₁, W₂, h₁, h₂, L, nothing)
+    return mlpPLRNN(A, W₁, W₂, h₁, h₂, nothing)
 end
 
 """

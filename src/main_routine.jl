@@ -46,6 +46,9 @@ function main_training_routine(args::AbstractDict)
     # model
     plrnn = initialize_model(args, D) |> device
 
+    # observation_model
+    O = initialize_observation_model(args, D) |> de
+    
     # optimizer
     opt = initialize_optimizer(args)
 
@@ -55,5 +58,5 @@ function main_training_routine(args::AbstractDict)
     # store hypers
     store_hypers(args, save_path)
 
-    train_!(plrnn, D, opt, args, save_path)
+    train_!(plrnn, O, D, opt, args, save_path)
 end

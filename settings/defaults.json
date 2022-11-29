@@ -12,6 +12,7 @@
         0.0
     ],
     "model": "nltPLRNN",
+    "observation_model": "Identity",
     "latent_dim": 3,
     "hidden_dim": 500,
     "weak_tf_alpha": 0.5,
@@ -28,7 +29,7 @@
     "gradient_clipping_norm": 10.0,
     "teacher_forcing_interval": 16,
     "batches_per_epoch": 50,
-    "scalar_saving_interval": 1,
+    "scalar_saving_interval": 50,
     "image_saving_interval": 100,
     "gaussian_noise_level": 0.05,
     "D_stsp_bins": 30,

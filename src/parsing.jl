@@ -27,7 +27,7 @@ function initialize_model(args::AbstractDict, D::Dataset)
     elseif model_name == "shallowPLRNN"
         model = shallowPLRNN(M, hidden_dim, N)
     elseif model_name == "nltPLRNN"
-        model = nltPLRNN(M,hidden_dim,N)
+        model = nltPLRNN(M,hidden_dim)
     end
 
     println("Model / # Parameters: $(typeof(model)) / $(num_params(model))")
@@ -49,27 +49,23 @@ function initialize_model(args::AbstractDict, D::ExternalInputsDataset)
     hidden_dim = args["hidden_dim"]
 
     if model_name == "PLRNN"
-        model = PLRNN(M, N, K)
+        model = PLRNN(M, K)
     elseif model_name == "mcPLRNN"
-        model = mcPLRNN(M, N, K)
+        model = mcPLRNN(M, K)
     elseif model_name == "clippedPLRNN"
-        model = clippedPLRNN(M, N, B, D.X, K)
+        model = clippedPLRNN(M, B, D.X, K)
     elseif model_name == "FCDendPLRNN"
-        model = FCDendPLRNN(M, N, B, D.X, K)
+        model = FCDendPLRNN(M, B, D.X, K)
     elseif model_name == "deepPLRNN"
-        model = deepPLRNN(M, Layers, N, K)
+        model = deepPLRNN(M, Layers,K)
     elseif model_name == "shallowPLRNN"
-        model = shallowPLRNN(M, hidden_dim, N, K)
+        model = shallowPLRNN(M, hidden_dim,K)
     elseif model_name =="nltPLRNN"
-        model = nltPLRNN(M,hidden_dim,N,K)
+        model = nltPLRNN(M,hidden_dim,K)
     elseif model_name =="mlpPLRNN"
-        model = mlpPLRNN(M,hidden_dim,N,K)
-    elseif model_name =="nlmlpPLRNN"
-        model = nlmlpPLRNN(M,hidden_dim,N,K)
-    elseif model_name =="highnlPLRNN"
-        model = highnlPLRNN(M,hidden_dim,N,K)
+        model = mlpPLRNN(M,hidden_dim,K)
     elseif model_name == "multiPLRNN"
-        model = multiPLRNN(M,hidden_dim,N,K)
+        model = multiPLRNN(M,hidden_dim,K)
     end
 
     println("Model / # Parameters: $(typeof(model)) / $(num_params(model))")

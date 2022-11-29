@@ -9,27 +9,24 @@ mutable struct nltPLRNN{V<:AbstractVector,M<:AbstractMatrix} <: BPTT.AbstractSha
     W₂::M
     h₁::V
     h₂::V
-    L::Union{M, Nothing}
     C::Union{M, Nothing}
 end
 @functor nltPLRNN
 
 # initialization/constructor
-function nltPLRNN(M::Int, hidden_dim::Int, N::Int)
+function nltPLRNN(M::Int, hidden_dim::Int)
     A, _, h₁ = initialize_A_W_h(M)
     h₂ = zeros(Float32, hidden_dim)
     W₁, W₂ = initialize_Ws(M, hidden_dim)
-    L = initialize_L(M, N)
-    return nltPLRNN(A, W₁, W₂, h₁, h₂, L, nothing)
+    return nltPLRNN(A, W₁, W₂, h₁, h₂, nothing)
 end
 
-function nltPLRNN(M::Int, hidden_dim::Int, N::Int, K::Int)
+function nltPLRNN(M::Int, hidden_dim::Int, K::Int)
     A, _, h₁ = initialize_A_W_h(M)
     h₂ = zeros(Float32, hidden_dim)
     W₁, W₂ = initialize_Ws(M, hidden_dim)
-    L = initialize_L(M, N)
     C = uniform_init((hidden_dim, K))
-    return nltPLRNN(A, W₁, W₂, h₁, h₂, L, C)
+    return nltPLRNN(A, W₁, W₂, h₁, h₂, C)
 end
 
 """
