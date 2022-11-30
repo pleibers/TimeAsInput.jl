@@ -2,15 +2,15 @@ using Flux: @functor
 
 abstract type AbstractParameterModel end
 
-mutable struct LinearParameterModel <: AbstractParameterModel
-    W::Matrix{Float32}
-    b::Vector{Float32}
+mutable struct LinearParameterModel{MV<:AbstractVecOrMat} <: AbstractParameterModel
+    W::MV
+    b::MV
 end
 @functor LinearParameterModel
 
 function affine(θ::AbstractVecOrMat)
-    W = θ
-    b = zeros(Float32, size(W, 1))
+    W = zeros(Float32, size(θ))
+    b = θ
     return LinearParameterModel(W, b)
 end
 

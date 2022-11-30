@@ -1,7 +1,6 @@
 using BPTT
 using Flux: @functor, relu
 
-
 # shallowPLRNN with t in the non linearity
 mutable struct nltPLRNN{V<:AbstractVector,M<:AbstractMatrix} <: BPTT.AbstractShallowPLRNN
     A::V

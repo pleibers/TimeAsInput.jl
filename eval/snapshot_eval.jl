@@ -206,6 +206,9 @@ end
 # evaluate_snapshots("Results/external_inputs/ShrinkingLorenz_nlt/","pre_last.bson", "nltPLRNN_ShrinkingLorenz_2", "ShrinkingLorenz", "data/snapshots/")
 # evaluate_snapshots("Results/external_inputs/ShrinkingLorenz_nlt/","preprelast.bson", "nltPLRNN_ShrinkingLorenz_3", "ShrinkingLorenz", "data/snapshots/")
 
+evaluate_snapshots("Results/external_inputs/Paper_base/","model_5000.bson", "nlt_Paperlorenz", "PaperLorenzBigChange", "data/snapshots/")
+
+
 # evaluate_snapshots("Results/external_inputs/StopBurstBN_nlt_p1/","last_1.bson", "nltPLRNN_SBBN_p1", "StopBurstBN", "data/snapshots/")
 # evaluate_snapshots("Results/external_inputs/StopBurstBN_nlt_p1/","last_2.bson", "nltPLRNN_SBBN_p1_2", "StopBurstBN", "data/snapshots/")
 # evaluate_snapshots("Results/external_inputs/StopBurstBN_mlp_p1/","last_model.bson", "mlpPLRNN_SBBN_p1", "StopBurstBN", "data/snapshots/")
