@@ -3,33 +3,43 @@
     "name": "PaperLorenz",
     "path_to_data": "data/benchmarks/PaperLorenzBigChange.npy",
     "path_to_inputs": "data/time_data/time_PaperLorenzBigChange.npy",
-    "prediction":true,
+
     "run": 1,
     "device": "cpu",
+    "scalar_saving_interval": 1,
+
     "affine_transformation": "linear",
     "affine_transform_coeff": [
         1.0,
         0.0
     ],
-    "model": "nltPLRNN",
+    "prediction": true,
+
+    "model": "ptPLRNN",
+    "optional_model_args": ["affine"],
     "observation_model": "Identity",
     "latent_dim": 3,
-    "hidden_dim": 500,
+    "hidden_dim": 50,
+
     "weak_tf_alpha": 0.5,
     "batch_size": 16,
     "sequence_length": 350,
+
     "start_lr": 1e-3,
     "end_lr": 1e-6,
     "epochs": 5000,
-    "num_bases": 30,
-    "hidden_layers": "20",
+
     "MAR_ratio": 0.0,
     "MAR_lambda": 0.005,
+    "lat_model_regularization": 0.0,
+    "obs_model_regularization": 0.0,
     "optimizer": "RADAM",
+
+    "num_bases": 30,
+    "hidden_layers": "20",
     "gradient_clipping_norm": 10.0,
     "teacher_forcing_interval": 16,
     "batches_per_epoch": 50,
-    "scalar_saving_interval": 50,
     "image_saving_interval": 100,
     "gaussian_noise_level": 0.05,
     "D_stsp_bins": 30,
