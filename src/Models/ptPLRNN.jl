@@ -9,7 +9,7 @@ mutable struct ptPLRNN{PM<:AbstractParameterModel} <: BPTT.AbstractShallowPLRNN
     h₁ₜ::PM
     h₂ₜ::PM
 end
-@functor nltPLRNN (gt,)
+@functor ptPLRNN (gt,)
 
 # initialization/constructor
 # no options without external inputs, as it is just a shallowPLRNN then

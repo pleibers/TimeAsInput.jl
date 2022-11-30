@@ -42,12 +42,13 @@ function main_training_routine(args::AbstractDict)
             D, D_test = train_test_split(D, TP_loc[get_model_from_path(args["path_to_data"])])
         end
     end
-
+    
     # model
-    plrnn = initialize_model(args, D) |> device
+    plrnn = initialize_model(args, D;mod=@__MODULE__) |> device
+
 
     # observation_model
-    O = initialize_observation_model(args, D) |> de
+    O = initialize_observation_model(args, D) |> device
     
     # optimizer
     opt = initialize_optimizer(args)
