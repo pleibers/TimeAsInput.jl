@@ -1,5 +1,4 @@
-using BPTT
-using Flux: @functor, relu
+include("paramModel.jl")
 
 # shallowPLRNN where parameters are inferred from time
 mutable struct ptPLRNN <: BPTT.AbstractShallowPLRNN
