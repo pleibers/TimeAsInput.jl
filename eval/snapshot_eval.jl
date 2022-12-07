@@ -27,7 +27,7 @@ load_model_(path::String) = load(path, @__MODULE__)[:model]
 function gen_at_t(plrnn::AbstractShallowPLRNN, t::Int, time::AbstractMatrix,og_data)
     time_input = similar(time)
     time_input .= time[t,1]
-    _, tseries = generate(plrnn, og_data[1,:],time_input, size(time_input,1))
+    tseries = generate(plrnn, og_data[1,:],time_input, size(time_input,1))
     return tseries
 end
 
@@ -50,7 +50,7 @@ function evaluate_snapshots(Results_path::String, model_name::String, name::Stri
     println("generating...")
     ts_0 = gen_at_t(model, 1, ext_in,og_data)
     ts_T = gen_at_t(model, size(ext_in, 1), ext_in,og_data)
-    _, ts_a = generate(model, og_data[1,:], ext_in,size(ext_in,1))
+    ts_a = generate(model, og_data[1,:], ext_in,size(ext_in,1))
     ts = [ts_0, ts_T, ts_a, og_data]
 
     snap_path = snapshots_path*"snaps_$data_system"
@@ -113,8 +113,8 @@ function compare_nlt_shallow(path::String, data_system::String)
         shallow = load_model_(path*"compare$run/shallow.bson")
 
 
-        _, ts_nlt = generate(nlt, og_data[1,:], ext_in,15000)
-        _, ts_shallow = generate(shallow, og_data[1,:], ext_in, 15000)
+        ts_nlt = generate(nlt, og_data[1,:], ext_in,15000)
+        ts_shallow = generate(shallow, og_data[1,:], ext_in, 15000)
 
         push!(tss_nlt, ts_nlt)
         push!(tss_shallow)
@@ -160,7 +160,7 @@ function check_around_snapshots(Results_path::String, model_name::String, data_s
     external_inputs = Float32.(affine_transformation.(time_data)) # to have type consistency
     ext_in = permutedims(reduce(hcat, external_inputs), (2, 1))
 
-    _, ts_a = generate(model, og_data[1,:], ext_in, size(ext_in,1))
+    ts_a = generate(model, og_data[1,:], ext_in, size(ext_in,1))
     # display(plot3dseries(ts_a, "all", ext_in))    
     for i in [1, 10, 100, 1000, 8000]
         ts_0 = gen_at_t(model, i, ext_in,og_data)
