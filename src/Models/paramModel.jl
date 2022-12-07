@@ -22,6 +22,14 @@ function param_at_T(m::LinearParameterModel, x::AbstractVector)
     return m.W .* x .+ m.b
 end
 
+function derivative(m::LinearParameterModel, time::AbstractMatrix)
+    return m.W
+end
+
+function second_derivative(m::LinearParameterModel, time::AbstractMatrix)
+    return 0
+end
+
 @inbounds function ChainRulesCore.rrule(
     ::typeof(param_at_T),
     PM::LinearParameterModel,

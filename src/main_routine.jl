@@ -45,6 +45,9 @@ function main_training_routine(args::AbstractDict)
     # model
     plrnn = initialize_model(args, D;mod=@__MODULE__) |> device
 
+    if typeof(plrnn) <: ptPLRNN
+        plrnn.t = ext_in
+    end
 
     # observation_model
     O = initialize_observation_model(args, D) |> device
