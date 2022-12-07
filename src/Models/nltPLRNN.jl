@@ -1,5 +1,3 @@
-using BPTT
-using Flux: @functor, relu
 
 # shallowPLRNN with t in the non linearity
 mutable struct nltPLRNN{V<:AbstractVector,M<:AbstractMatrix} <: BPTT.AbstractShallowPLRNN
@@ -8,6 +6,7 @@ mutable struct nltPLRNN{V<:AbstractVector,M<:AbstractMatrix} <: BPTT.AbstractSha
     W₂::M
     h₁::V
     h₂::V
+    L::Union{M,Nothing}
     C::Union{M, Nothing}
 end
 @functor nltPLRNN
@@ -17,7 +16,7 @@ function nltPLRNN(M::Int, hidden_dim::Int)
     A, _, h₁ = initialize_A_W_h(M)
     h₂ = zeros(Float32, hidden_dim)
     W₁, W₂ = initialize_Ws(M, hidden_dim)
-    return nltPLRNN(A, W₁, W₂, h₁, h₂, nothing)
+    return nltPLRNN(A, W₁, W₂, h₁, h₂, nothing, nothing)
 end
 
 function nltPLRNN(M::Int, hidden_dim::Int, K::Int)
@@ -25,7 +24,7 @@ function nltPLRNN(M::Int, hidden_dim::Int, K::Int)
     h₂ = zeros(Float32, hidden_dim)
     W₁, W₂ = initialize_Ws(M, hidden_dim)
     C = uniform_init((hidden_dim, K))
-    return nltPLRNN(A, W₁, W₂, h₁, h₂, C)
+    return nltPLRNN(A, W₁, W₂, h₁, h₂, nothing, C)
 end
 
 """

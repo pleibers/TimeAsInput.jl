@@ -1,11 +1,9 @@
-using BPTT
-using Flux: @functor, relu
 using Flux
 
 function build_mlp(; n_hidden=32, n_input=1, n_output=3)
     return Chain(
         Dense(n_input => n_hidden, relu, init=uniform_init),
-        Dense(n_hidden => n_output,init=uniform_init))
+        Dense(n_hidden => n_output, init=uniform_init))
 end
 
 mutable struct mlpPLRNN{V<:AbstractVector,M<:AbstractMatrix,NN<:Flux.Chain} <: AbstractShallowPLRNN
@@ -14,6 +12,7 @@ mutable struct mlpPLRNN{V<:AbstractVector,M<:AbstractMatrix,NN<:Flux.Chain} <: A
     W₂::M
     h₁::V
     h₂::V
+    L::Union{M,Nothing}
     mlp::Union{NN,Nothing}
 end
 @functor mlpPLRNN
@@ -23,14 +22,14 @@ function mlpPLRNN(M::Int, hidden_dim::Int, K::Int)
     h₂ = zeros(Float32, hidden_dim)
     W₁, W₂ = initialize_Ws(M, hidden_dim)
     mlp = build_mlp(n_input=K, n_output=M)
-    return mlpPLRNN(A, W₁, W₂, h₁, h₂, mlp)
+    return mlpPLRNN(A, W₁, W₂, h₁, h₂, nothing, mlp)
 end
 
 function mlpPLRNN(M::Int, hidden_dim::Int)
     A, _, h₁ = initialize_A_W_h(M)
     h₂ = zeros(Float32, hidden_dim)
     W₁, W₂ = initialize_Ws(M, hidden_dim)
-    return mlpPLRNN(A, W₁, W₂, h₁, h₂, nothing)
+    return mlpPLRNN(A, W₁, W₂, h₁, h₂, nothing, nothing)
 end
 
 """

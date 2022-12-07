@@ -1,4 +1,3 @@
-using BPTT
 using Benchmarks: TP_loc
 
 Base.Float32(V::Vector{Float64}) = Base.Float32.(V)

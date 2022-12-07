@@ -1,4 +1,3 @@
-using BPTT
 using ArgParse
 
 function args_table()
