@@ -24,7 +24,8 @@ function ptPLRNN(M::Int, hidden_dim::Int, PM_type::String, K::Int)
     return ptPLRNN(A, W₁, W₂, h₁, h₂, randn(Float32, 10, 1))
 end
 
-function BPTT.PLRNNs.step(m::ptPLRNN, z::AbstractVector, t::AbstractVector)
+function BPTT.PLRNNs.step(m::ptPLRNN, z::AbstractVector, time::AbstractVector)
+    t = time[1]
     return m.Aₜ(t) .* z .+ m.W₁ₜ(t) * relu.(m.W₂ₜ(t) * z .+ m.h₂ₜ(t)) .+ m.h₁ₜ(t)
 end
 

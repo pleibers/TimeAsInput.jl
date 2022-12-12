@@ -87,3 +87,9 @@ function initialize_Cs(M,hidden_dim, input_dim)
     C₂ = uniform_init((hidden_dim,input_dim))
     return C₁, C₂
 end
+
+function build_mlp(; n_hidden=32, n_input=1, n_output=3)
+    return Chain(
+        Dense(n_input => n_hidden, relu, init=uniform_init),
+        Dense(n_hidden => n_output, init=uniform_init))
+end
