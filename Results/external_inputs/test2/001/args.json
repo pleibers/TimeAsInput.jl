@@ -22,7 +22,7 @@
     "gradient_clipping_norm": 10.0,
     "D_stsp_scaling": 0.3,
     "optional_model_args": [
-        "affine"
+        "mlp"
     ],
     "image_saving_interval": 100,
     "num_bases": 30,

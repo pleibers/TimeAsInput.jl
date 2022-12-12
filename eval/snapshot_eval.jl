@@ -27,19 +27,20 @@ load_model_(path::String) = load(path, @__MODULE__)[:model]
 function gen_at_t(plrnn::AbstractShallowPLRNN, t::Int, time::AbstractMatrix,og_data)
     time_input = similar(time)
     time_input .= time[t,1]
+    # maybe need to adjust load model
     tseries = generate(plrnn, og_data[1,:],time_input, size(time_input,1))
     return tseries
 end
 
-function evaluate_snapshots(Results_path::String, model_name::String, name::String, data_system::String, snapshots_path::String)
+function evaluate_snapshots(Results_path::String, model_name::String, name::String, snapshots_path::String)
     model_path = Results_path*model_name
     args_path = Results_path*"args.json"
 
     args = convert_to_Float32(JSON.parsefile(args_path))
     model = load_model_(model_path)
 
-    og_data = npzread("data/benchmarks/$data_system.npy")
-    time_data = npzread("data/time_data/time_$data_system.npy")
+    og_data = npzread(args["path_to_data"])
+    time_data = npzread(args["path_to_inputs"])
     @assert time_data[1] == -1 "data not normalized"
 
     trans_coeff = args["affine_transform_coeff"]
@@ -53,7 +54,7 @@ function evaluate_snapshots(Results_path::String, model_name::String, name::Stri
     ts_a = generate(model, og_data[1,:], ext_in,size(ext_in,1))
     ts = [ts_0, ts_T, ts_a, og_data]
 
-    snap_path = snapshots_path*"snaps_$data_system"
+    snap_path = snapshots_path*"snaps_$name"
     snap_0 = npzread(snap_path*"_1.npy")
     snap_T = npzread(snap_path*"_2.npy")
     og_stuff = [snap_0, snap_T, og_data]
@@ -90,11 +91,11 @@ end
 
 
 
-function compare_nlt_shallow(path::String, data_system::String)
-    args = convert_to_Float32(JSON.parsefile(path*"compare1/args.json"))
+function compare_nlt_shallow(path::String)
+    args = convert_to_Float32(JSON.parsefile(path * "compare1/args.json"))
 
-    og_data = npzread("data/benchmarks/$data_system.npy")
-    time_data = npzread("data/time_data/time_$data_system.npy")
+    og_data = npzread(args["path_to_data"])
+    time_data = npzread(args["path_to_inputs"])
     @assert time_data[1] == -1 "data not normalized"
 
     trans_coeff = args["affine_transform_coeff"]
@@ -109,49 +110,49 @@ function compare_nlt_shallow(path::String, data_system::String)
     klx = Vector{AbstractFloat}()
     plots = []
     for run in 1:2
-        nlt = load_model_(path*"compare$run/nlt.bson")
-        shallow = load_model_(path*"compare$run/shallow.bson")
+        nlt = load_model_(path * "compare$run/nlt.bson")
+        shallow = load_model_(path * "compare$run/shallow.bson")
 
 
-        ts_nlt = generate(nlt, og_data[1,:], ext_in,15000)
-        ts_shallow = generate(shallow, og_data[1,:], ext_in, 15000)
+        ts_nlt = generate(nlt, og_data[1, :], ext_in, 15000)
+        ts_shallow = generate(shallow, og_data[1, :], ext_in, 15000)
 
         push!(tss_nlt, ts_nlt)
         push!(tss_shallow)
         # get klx
         ts = [ts_nlt, ts_shallow]
-        scal, stsp_name = decide_on_measure(args["D_stsp_scaling"], args["D_stsp_bins"], size(og_data,2))
+        scal, stsp_name = decide_on_measure(args["D_stsp_scaling"], args["D_stsp_bins"], size(og_data, 2))
         for idx in 1:2
             D_stsp = state_space_distance(og_data, ts[idx], scal)
             push!(klx, round(D_stsp, digits=5))
         end
 
-        nlt_p = plot3d(og_data[:,1],og_data[:,2],og_data[:,3], lc=:blue, margin=0.01Plots.mm)
-        plot3d!(nlt_p, ts_nlt[:,1], ts_nlt[:,2], ts_nlt[:,3], grid=true, 
-                        xlabel="x", ylabel="y", zlabel="z", 
-                        label=nothing, lc=:orange, legend=nothing, margin=0.01Plots.mm) 
+        nlt_p = plot3d(og_data[:, 1], og_data[:, 2], og_data[:, 3], lc=:blue, margin=0.01Plots.mm)
+        plot3d!(nlt_p, ts_nlt[:, 1], ts_nlt[:, 2], ts_nlt[:, 3], grid=true,
+            xlabel="x", ylabel="y", zlabel="z",
+            label=nothing, lc=:orange, legend=nothing, margin=0.01Plots.mm)
         push!(plots, nlt_p)
-        shallow_p = plot3d(og_data[:,1],og_data[:,2],og_data[:,3], lc=:blue, margin=0.01Plots.mm)
-        plot3d!(shallow_p, ts_shallow[:,1], ts_shallow[:,2], ts_shallow[:,3], grid=true, 
-                        xlabel="x", ylabel="y", zlabel="z", 
-                        label=nothing, lc=:orange, legend=nothing, margin=0.01Plots.mm) 
+        shallow_p = plot3d(og_data[:, 1], og_data[:, 2], og_data[:, 3], lc=:blue, margin=0.01Plots.mm)
+        plot3d!(shallow_p, ts_shallow[:, 1], ts_shallow[:, 2], ts_shallow[:, 3], grid=true,
+            xlabel="x", ylabel="y", zlabel="z",
+            label=nothing, lc=:orange, legend=nothing, margin=0.01Plots.mm)
         push!(plots, shallow_p)
     end
-    comp_p = plot(plots[1], plots[2], plots[3], plots[4], margin=0.0Plots.mm,layout=grid(2,2),
-     titlefont=font(8),title=["\n"*" "^70*"Inputs\nInside\nklx=$(klx[1])" "\n\nOutside\nklx=$(klx[2])" "\nklx=$(klx[3])" "\nklx=$(klx[4])"], plot_titlefont=font(14),plot_title="Comparison between Models")
+    comp_p = plot(plots[1], plots[2], plots[3], plots[4], margin=0.0Plots.mm, layout=grid(2, 2),
+        titlefont=font(8), title=["\n" * " "^70 * "Inputs\nInside\nklx=$(klx[1])" "\n\nOutside\nklx=$(klx[2])" "\nklx=$(klx[3])" "\nklx=$(klx[4])"], plot_titlefont=font(14), plot_title="Comparison between Models")
     mkpath("Figures/evaluation/")
     savefig(comp_p, "Figures/evaluation/Compare_nlt_shallow_$run.png")
 end
 
-function check_around_snapshots(Results_path::String, model_name::String, data_system::String)
+function check_around_snapshots(Results_path::String, model_name::String)
     model_path = Results_path * model_name
     args_path = Results_path * "args.json"
 
     args = convert_to_Float32(JSON.parsefile(args_path))
     model = load_model_(model_path)
 
-    og_data = npzread("data/benchmarks/$data_system.npy")
-    time_data = npzread("data/time_data/time_$data_system.npy")
+    og_data = npzread(args["path_to_data"])
+    time_data = npzread(args["path_to_inputs"])
     @assert time_data[1] == -1 "data not normalized"
 
     trans_coeff = args["affine_transform_coeff"]
@@ -160,11 +161,11 @@ function check_around_snapshots(Results_path::String, model_name::String, data_s
     external_inputs = Float32.(affine_transformation.(time_data)) # to have type consistency
     ext_in = permutedims(reduce(hcat, external_inputs), (2, 1))
 
-    ts_a = generate(model, og_data[1,:], ext_in, size(ext_in,1))
+    ts_a = generate(model, og_data[1, :], ext_in, size(ext_in, 1))
     # display(plot3dseries(ts_a, "all", ext_in))    
     for i in [1, 10, 100, 1000, 8000]
-        ts_0 = gen_at_t(model, i, ext_in,og_data)
-        ts_T = gen_at_t(model, size(ext_in, 1) - i, ext_in,og_data)
+        ts_0 = gen_at_t(model, i, ext_in, og_data)
+        ts_T = gen_at_t(model, size(ext_in, 1) - i, ext_in, og_data)
         title0 = "t=$i"
         titleT = "t=$(size(ext_in, 1)-i)"
         p_0 = plot3dseries(ts_0, nothing, ext_in)
@@ -174,10 +175,10 @@ function check_around_snapshots(Results_path::String, model_name::String, data_s
     end
 end
 
-function eval_wo_ext(model_path::String, data_system::String, fig::String)
-    og_data = npzread("data/benchmarks/$data_system.npy")
+function eval_wo_ext(model_path::String, name::String, fig::String)
     model = load_model_(model_path)
-    time_data = npzread("data/time_data/time_$data_system.npy")
+    og_data = npzread(args["path_to_data"])
+    time_data = npzread(args["path_to_inputs"])
     time = zeros(size(time_data))
     ts = Matrix(gen_at_t(model, 1, time, og_data))
     p = plot3d(ts[:, 1], ts[:, 2], ts[:, 3], label="0.5")
@@ -186,44 +187,44 @@ function eval_wo_ext(model_path::String, data_system::String, fig::String)
         ts = Matrix(gen_at_t(model, 1, time, og_data))
         plot3d!(ts[:, 1], ts[:, 2], ts[:, 3], label="$(round((i*0.2)/2,digits=1))")
     end
-    savefig(p, "Figures/evaluation/$fig _$data_system.png")
+    savefig(p, "Figures/evaluation/$fig _$name.png")
 end
     
 # -------------------------------------------------------------------------------------------
 # Evaluations
 
-# compare_nlt_shallow("Results/external_inputs/Compare_nlt_shallow/", "ShiftingLorenz")
+# compare_nlt_shallow("Results/external_inputs/Compare_nlt_shallow/")
 
 
-# evaluate_snapshots("Results/external_inputs/ExplodingLorenz_nlt/001/","last_model.bson", "nltPLRNN_exploding", "ExplodingLorenz", "data/snapshots/")
-# evaluate_snapshots("Results/external_inputs/ShiftingLorenz_nlt/002/","last_model.bson", "nltPLRNN_Shifting", "ShiftingLorenz", "data/snapshots/")
+# evaluate_snapshots("Results/external_inputs/ExplodingLorenz_nlt/001/","last_model.bson", "nltPLRNN_exploding", "data/snapshots/")
+# evaluate_snapshots("Results/external_inputs/ShiftingLorenz_nlt/002/","last_model.bson", "nltPLRNN_Shifting","data/snapshots/")
 
-# evaluate_snapshots("Results/external_inputs/StopBurstBN_nlt/","last_model.bson", "nltPLRNN_SBBN", "StopBurstBN", "data/snapshots/")
-# evaluate_snapshots("Results/external_inputs/StopBurstBN_nlt/","4050.bson", "nltPLRNN_SBBN_2", "StopBurstBN", "data/snapshots/")
-# evaluate_snapshots("Results/external_inputs/StopBurstBN_mlp/","last_model.bson", "mlpPLRNN_SBBN", "StopBurstBN", "data/snapshots/")
+# evaluate_snapshots("Results/external_inputs/StopBurstBN_nlt/","last_model.bson", "nltPLRNN_SBBN", "data/snapshots/")
+# evaluate_snapshots("Results/external_inputs/StopBurstBN_nlt/","4050.bson", "nltPLRNN_SBBN_2", "data/snapshots/")
+# evaluate_snapshots("Results/external_inputs/StopBurstBN_mlp/","last_model.bson", "mlpPLRNN_SBBN", "data/snapshots/")
 
-# evaluate_snapshots("Results/external_inputs/ShrinkingLorenz_nlt/","last_model.bson", "nltPLRNN_ShrinkingLorenz", "ShrinkingLorenz", "data/snapshots/")
-# evaluate_snapshots("Results/external_inputs/ShrinkingLorenz_nlt/","pre_last.bson", "nltPLRNN_ShrinkingLorenz_2", "ShrinkingLorenz", "data/snapshots/")
-# evaluate_snapshots("Results/external_inputs/ShrinkingLorenz_nlt/","preprelast.bson", "nltPLRNN_ShrinkingLorenz_3", "ShrinkingLorenz", "data/snapshots/")
+# evaluate_snapshots("Results/external_inputs/ShrinkingLorenz_nlt/","last_model.bson", "nltPLRNN_ShrinkingLorenz", "data/snapshots/")
+# evaluate_snapshots("Results/external_inputs/ShrinkingLorenz_nlt/","pre_last.bson", "nltPLRNN_ShrinkingLorenz_2", "data/snapshots/")
+# evaluate_snapshots("Results/external_inputs/ShrinkingLorenz_nlt/","preprelast.bson", "nltPLRNN_ShrinkingLorenz_3", "data/snapshots/")
 
-evaluate_snapshots("Results/external_inputs/Paper_base/","model_5000.bson", "nlt_Paperlorenz", "PaperLorenzBigChange", "data/snapshots/")
-
-
-# evaluate_snapshots("Results/external_inputs/StopBurstBN_nlt_p1/","last_1.bson", "nltPLRNN_SBBN_p1", "StopBurstBN", "data/snapshots/")
-# evaluate_snapshots("Results/external_inputs/StopBurstBN_nlt_p1/","last_2.bson", "nltPLRNN_SBBN_p1_2", "StopBurstBN", "data/snapshots/")
-# evaluate_snapshots("Results/external_inputs/StopBurstBN_mlp_p1/","last_model.bson", "mlpPLRNN_SBBN_p1", "StopBurstBN", "data/snapshots/")
-# evaluate_snapshots("Results/external_inputs/StopBurstBN_nlt_unc/", "last_model.bson", "nltPLRNN_SBBN_unc_1", "StopBurstBN", "data/snapshots/")
-# evaluate_snapshots("Results/external_inputs/StopBurstBN_nlt_unc/", "2850.bson", "nltPLRNN_SBBN_unc_2", "StopBurstBN", "data/snapshots/")
+evaluate_snapshots("Results/external_inputs/Paper_base/","model_5000.bson", "nlt_Paperlorenz", "data/snapshots/")
 
 
-# check_around_snapshots("Results/external_inputs/ShiftingLorenz_nlt/002/", "last_model.bson","ShiftingLorenz")
-# check_around_snapshots("Results/external_inputs/ExplodingLorenz_nlt/001/","last_model.bson","ExplodingLorenz")
-# check_around_snapshots("Results/external_inputs/StopBurstBN_nlt/", "4050.bson", "StopBurstBN")
-# check_around_snapshots("Results/external_inputs/ShrinkingLorenz_nlt/","last_model.bson","ShrinkingLorenz")
+# evaluate_snapshots("Results/external_inputs/StopBurstBN_nlt_p1/","last_1.bson", "nltPLRNN_SBBN_p1", "data/snapshots/")
+# evaluate_snapshots("Results/external_inputs/StopBurstBN_nlt_p1/","last_2.bson", "nltPLRNN_SBBN_p1_2", "data/snapshots/")
+# evaluate_snapshots("Results/external_inputs/StopBurstBN_mlp_p1/","last_model.bson", "mlpPLRNN_SBBN_p1", "data/snapshots/")
+# evaluate_snapshots("Results/external_inputs/StopBurstBN_nlt_unc/", "last_model.bson", "nltPLRNN_SBBN_unc_1", "data/snapshots/")
+# evaluate_snapshots("Results/external_inputs/StopBurstBN_nlt_unc/", "2850.bson", "nltPLRNN_SBBN_unc_2", "data/snapshots/")
 
-# eval_wo_ext("Results/external_inputs/StopBurstBN_nlt/last_model.bson", "StopBurstBN", "snapshots_bad")
-# eval_wo_ext("Results/external_inputs/StopBurstBN_nlt/4050.bson", "StopBurstBN", "snapshots_good")
-# eval_wo_ext("Results/external_inputs/ShrinkingLorenz_nlt/last_model.bson","ShrinkingLorenz","snapshots")
+
+# check_around_snapshots("Results/external_inputs/ShiftingLorenz_nlt/002/", "last_model.bson")
+# check_around_snapshots("Results/external_inputs/ExplodingLorenz_nlt/001/","last_model.bson")
+# check_around_snapshots("Results/external_inputs/StopBurstBN_nlt/", "4050.bson")
+# check_around_snapshots("Results/external_inputs/ShrinkingLorenz_nlt/","last_model.bson")
+
+# eval_wo_ext("Results/external_inputs/StopBurstBN_nlt/last_model.bson" , "snapshots_bad")
+# eval_wo_ext("Results/external_inputs/StopBurstBN_nlt/4050.bson",  "snapshots_good")
+# eval_wo_ext("Results/external_inputs/ShrinkingLorenz_nlt/last_model.bson","snapshots")
 
 
 # eval_wo_ext("Results/external_inputs/StopBurstBN_nlt_p1/last_1.bson", "StopBurstBN", "snapss")

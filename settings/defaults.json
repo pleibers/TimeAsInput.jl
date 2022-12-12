@@ -16,11 +16,11 @@
     "prediction": false,
 
     "model": "ptPLRNN",
-    "optional_model_args": ["affine"],
+    "optional_model_args": ["mlp"],
     "observation_model": "Identity",
     "latent_dim": 3,
     "hidden_dim": 50,
-    "lat_model_regularization": 0.1,
+    "lat_model_regularization": 0.0,
 
     "weak_tf_alpha": 0.5,
     "batch_size": 16,
