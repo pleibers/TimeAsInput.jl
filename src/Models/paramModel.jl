@@ -19,11 +19,16 @@ function affine(θ::AbstractVecOrMat)
     return LinearParameterModel(W, b)
 end
 
-(m::AbstractParameterModel)(x::AbstractFloat) = param_at_T(m, x) :: Union{AbstractVector,  AbstractMatrix}
+(m::AbstractParameterModel)(x::AbstractFloat) = param_at_T(m, x)::Union{AbstractVector,AbstractMatrix}
 derivative(m::AbstractParameterModel, time::AbstractMatrix) = [norm(derivative(m, t)) for t in time]
 second_derivative(m::AbstractParameterModel, time::AbstractMatrix) = [norm(second_derivative(m, t)) for t in time]
 
-
+# include("initialization.jl")
+# using BPTT: uniform
+# PM = affine(rand(Float32, 3))
+# using Zygote: gradient
+# using BenchmarkTools
+# @btime gradient(x->sum(PM(x)), 2f0)
 
 function param_at_T(m::LinearParameterModel, x::AbstractFloat)
     return m.W .* x .+ m.b
@@ -52,7 +57,7 @@ end
 @functor ARParameterModel
 
 function ar(θ::AbstractVecOrMat)
-    as = [θ for i in 1:10]
+    as = (uniform_init(size(θ)) for i in 1:10)
     return ARParameterModel(as...)
 end
 
@@ -89,44 +94,42 @@ end
 
 
 derivative(m::MLPParameterModel, time::AbstractFloat) = reshape(Flux.jacobian(m, time)[1], m.shape)
-function second_derivative(m::MLPParameterModel, time::AbstractFloat) 
+function second_derivative(m::MLPParameterModel, time::AbstractFloat)
     f(x) = sum(m.mlp(x))
     hess = ForwardDiff.jacobian(x -> ReverseDiff.gradient(f, x), [time])
     return hess
 end
 
 
+# @inbounds function ChainRulesCore.rrule(
+#     ::typeof(param_at_T),
+#     PM::LinearParameterModel,
+#     x::AbstractFloat
+# )
+#     y = param_at_T(PM, x)
+#     function PM_pullback(ΔΩ)
+#         p̄_at_T = NoTangent()
+#         P̄M = Tangent{LinearParameterModel}(; W=ΔΩ * x, b=ΔΩ)
+#         x̄ = @thunk(sum(PM.W .* ΔΩ))
+#         return p̄_at_T, P̄M, x̄
+#     end
+#     return y, PM_pullback
+# end
 
-
-@inbounds function ChainRulesCore.rrule(
-    ::typeof(param_at_T),
-    PM::LinearParameterModel,
-    x::AbstractFloat
-)
-    y = param_at_T(PM, x)
-    function PM_pullback(ΔΩ)
-        p̄_at_T = NoTangent()
-        P̄M = Tangent{LinearParameterModel}(; W=ΔΩ .* x, b=ΔΩ)
-        x̄ = @thunk(sum(PM.W .* ΔΩ))
-        return p̄_at_T, P̄M, x̄
-    end
-    return y, PM_pullback
-end
-
-@inbounds function ChainRulesCore.rrule(
-    ::typeof(param_at_T),
-    PM::ARParameterModel,
-    x::AbstractFloat
-)
-    y = param_at_T(PM, x)
-    function PM_pullback(ΔΩ)
-        p̄_at_T = NoTangent()
-        P̄M = Tangent{ARParameterModel}(; a₀=ΔΩ, a₁=ΔΩ .* x, a₂=ΔΩ .* x^2, a₃=ΔΩ .* x^3, a₄=ΔΩ .* x^4, a₅=ΔΩ .* x^5, a₆=ΔΩ .* x^6, a₇=ΔΩ .* x^7, a₈=ΔΩ .* x^8, a₉=ΔΩ .* x^9)
-        x̄ = @thunk(sum((PM.a₁ .+ 2 .* PM.a₂ .* x .+ 3 .* PM.a₃ .* x^2 .+ 4 .* PM.a₄ .* x^3 .+ 5 .* PM.a₅ .* x^4 .+ 6 .* PM.a₆ .* x^5 .+ 7 .* PM.a₇ .* x^6 .+ 8 .* PM.a₈ .* x^7 .+ 9 .* PM.a₉ .* x^8) .* ΔΩ))
-        return p̄_at_T, P̄M, x̄
-    end
-    return y, PM_pullback
-end
+# @inbounds function ChainRulesCore.rrule(
+#     ::typeof(param_at_T),
+#     PM::ARParameterModel,
+#     x::AbstractFloat
+# )
+#     y = param_at_T(PM, x)
+#     function PM_pullback(ΔΩ)
+#         p̄_at_T = NoTangent()
+#         P̄M = Tangent{ARParameterModel}(; a₀=ΔΩ, a₁=ΔΩ .* x, a₂=ΔΩ .* x^2, a₃=ΔΩ .* x^3, a₄=ΔΩ .* x^4, a₅=ΔΩ .* x^5, a₆=ΔΩ .* x^6, a₇=ΔΩ .* x^7, a₈=ΔΩ .* x^8, a₉=ΔΩ .* x^9)
+#         x̄ = @thunk(sum((PM.a₁ .+ 2 .* PM.a₂ .* x .+ 3 .* PM.a₃ .* x^2 .+ 4 .* PM.a₄ .* x^3 .+ 5 .* PM.a₅ .* x^4 .+ 6 .* PM.a₆ .* x^5 .+ 7 .* PM.a₇ .* x^6 .+ 8 .* PM.a₈ .* x^7 .+ 9 .* PM.a₉ .* x^8) .* ΔΩ))
+#         return p̄_at_T, P̄M, x̄
+#     end
+#     return y, PM_pullback
+# end
 
 # @inbounds function ChainRulesCore.rrule(
 #     config::RuleConfig{>:HasReverseMode},

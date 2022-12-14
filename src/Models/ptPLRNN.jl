@@ -1,16 +1,17 @@
 include("paramModel.jl")
+import BPTT: generate, prediction_error
 
 # shallowPLRNN where parameters are inferred from time
-mutable struct ptPLRNN <: BPTT.AbstractShallowPLRNN
-    Aₜ::AbstractParameterModel
-    W₁ₜ::AbstractParameterModel
-    W₂ₜ::AbstractParameterModel
-    h₁ₜ::AbstractParameterModel
-    h₂ₜ::AbstractParameterModel
+mutable struct ptPLRNN{APM<:AbstractParameterModel,APV<:AbstractParameterModel,M<:AbstractMatrix} <: BPTT.AbstractShallowPLRNN
+    Aₜ::APV
+    W₁ₜ::APM
+    W₂ₜ::APM
+    h₁ₜ::APV
+    h₂ₜ::APV
 
-    t::AbstractMatrix
+    t::M
 end
-@functor ptPLRNN (Aₜ,W₁ₜ,W₂ₜ,h₁ₜ,h₂ₜ)
+@functor ptPLRNN (Aₜ, W₁ₜ, W₂ₜ, h₁ₜ, h₂ₜ)
 
 # initialization/constructor
 # no options without external inputs, as it is just a shallowPLRNN then
@@ -24,18 +25,31 @@ function ptPLRNN(M::Int, hidden_dim::Int, PM_type::String, K::Int)
     return ptPLRNN(A, W₁, W₂, h₁, h₂, randn(Float32, 10, 1))
 end
 
+function ns_step(z::AbstractVector, params::AbstractVector)
+    A, W₁, W₂, h₁, h₂ = params
+    return A .* z .+ W₁ * relu.(W₂ * z .+ h₂) .+ h₁
+end
+
+function BPTT.PLRNNs.step(m::ptPLRNN, z::AbstractVecOrMat)
+    return m.Aₜ(0) .* z .+ m.W₁ₜ(0) * relu.(m.W₂ₜ(0) * z .+ m.h₂ₜ(0)) .+ m.h₁ₜ(0)
+end
+
 function BPTT.PLRNNs.step(m::ptPLRNN, z::AbstractVector, time::AbstractVector)
     t = time[1]
     return m.Aₜ(t) .* z .+ m.W₁ₜ(t) * relu.(m.W₂ₜ(t) * z .+ m.h₂ₜ(t)) .+ m.h₁ₜ(t)
 end
+function BPTT.PLRNNs.step(m::ptPLRNN, z::AbstractMatrix, time::AbstractMatrix)
+    z = m.(eachcol(z), eachcol(time))
+    return reduce(hcat, z)
+end
 
-function BPTT.PLRNNs.step(m::ptPLRNN, z::AbstractMatrix, t::AbstractMatrix)
-    zₜ = m.(eachcol(z), eachcol(t))
-    return reduce(hcat, zₜ)
+function get_params_at_T(m::ptPLRNN, time::AbstractVector)
+    t = time[1]
+    return [m.Aₜ(t), m.W₁ₜ(t), m.W₂ₜ(t), m.h₁ₜ(t), m.h₂ₜ(t)]
 end
 
 # has a weird way of getting lambda maybe changing it in bptt?
-function BPTT.TFTraining.regularize(m::ptPLRNN, λ::Float32; penalty=l2_penalty,λ₂=0.1)
+function BPTT.TFTraining.regularize(m::ptPLRNN, λ::Float32; penalty=l2_penalty, λ₂=0.1)
     A_reg_1 = penalty(derivative(m.Aₜ, m.t))
     W₁_reg_1 = penalty(derivative(m.W₁ₜ, m.t))
     W₂_reg_1 = penalty(derivative(m.W₂ₜ, m.t))
@@ -47,7 +61,7 @@ function BPTT.TFTraining.regularize(m::ptPLRNN, λ::Float32; penalty=l2_penalty,
     W₂_reg_2 = penalty(second_derivative(m.W₂ₜ, m.t))
     h₁_reg_2 = penalty(second_derivative(m.h₁ₜ, m.t))
     h₂_reg_2 = penalty(second_derivative(m.h₂ₜ, m.t))
-    λ₁=λ
+    λ₁ = λ
     return λ₁ * (A_reg_1 + W₁_reg_1 + W₂_reg_1 + h₁_reg_1 + h₂_reg_1) + λ₂ * (A_reg_2 + W₁_reg_2 + W₂_reg_2 + h₁_reg_2 + h₂_reg_2)
 end
 l2_penalty(θ) = isnothing(θ) ? 0 : sum(abs2, θ)
