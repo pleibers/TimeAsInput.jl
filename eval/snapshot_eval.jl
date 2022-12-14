@@ -32,12 +32,12 @@ function gen_at_t(plrnn::AbstractShallowPLRNN, t::Int, time::AbstractMatrix,og_d
     return tseries
 end
 
-function evaluate_snapshots(Results_path::String, model_name::String, name::String, snapshots_path::String)
+function evaluate_snapshots(Results_path::String, model_name::String, name::String, snapshots_path::String, exp_name::String)
     model_path = Results_path*model_name
     args_path = Results_path*"args.json"
 
     args = convert_to_Float32(JSON.parsefile(args_path))
-    model = load_model_(model_path)
+    model = load_model_(model_path)[1]
 
     og_data = npzread(args["path_to_data"])
     time_data = npzread(args["path_to_inputs"])
@@ -54,7 +54,7 @@ function evaluate_snapshots(Results_path::String, model_name::String, name::Stri
     ts_a = generate(model, og_data[1,:], ext_in,size(ext_in,1))
     ts = [ts_0, ts_T, ts_a, og_data]
 
-    snap_path = snapshots_path*"snaps_$name"
+    snap_path = snapshots_path*"snaps_$exp_name"
     snap_0 = npzread(snap_path*"_1.npy")
     snap_T = npzread(snap_path*"_2.npy")
     og_stuff = [snap_0, snap_T, og_data]
@@ -110,8 +110,8 @@ function compare_nlt_shallow(path::String)
     klx = Vector{AbstractFloat}()
     plots = []
     for run in 1:2
-        nlt = load_model_(path * "compare$run/nlt.bson")
-        shallow = load_model_(path * "compare$run/shallow.bson")
+        nlt = load_model_(path * "compare$run/nlt.bson")[1]
+        shallow = load_model_(path * "compare$run/shallow.bson")[1]
 
 
         ts_nlt = generate(nlt, og_data[1, :], ext_in, 15000)
@@ -149,7 +149,7 @@ function check_around_snapshots(Results_path::String, model_name::String)
     args_path = Results_path * "args.json"
 
     args = convert_to_Float32(JSON.parsefile(args_path))
-    model = load_model_(model_path)
+    model = load_model_(model_path)[1]
 
     og_data = npzread(args["path_to_data"])
     time_data = npzread(args["path_to_inputs"])
@@ -164,6 +164,7 @@ function check_around_snapshots(Results_path::String, model_name::String)
     ts_a = generate(model, og_data[1, :], ext_in, size(ext_in, 1))
     # display(plot3dseries(ts_a, "all", ext_in))    
     for i in [1, 10, 100, 1000, 8000]
+        println("generating snapshot $i")
         ts_0 = gen_at_t(model, i, ext_in, og_data)
         ts_T = gen_at_t(model, size(ext_in, 1) - i, ext_in, og_data)
         title0 = "t=$i"
@@ -196,31 +197,32 @@ end
 # compare_nlt_shallow("Results/external_inputs/Compare_nlt_shallow/")
 
 
-# evaluate_snapshots("Results/external_inputs/ExplodingLorenz_nlt/001/","last_model.bson", "nltPLRNN_exploding", "data/snapshots/")
-# evaluate_snapshots("Results/external_inputs/ShiftingLorenz_nlt/002/","last_model.bson", "nltPLRNN_Shifting","data/snapshots/")
+# evaluate_snapshots("Results/external_inputs/ExplodingLorenz_nlt/001/","last_model.bson", "nltPLRNN_exploding", "data/snapshots/", "ExplodingLorenz")
+# evaluate_snapshots("Results/external_inputs/ShiftingLorenz_nlt/002/","last_model.bson", "nltPLRNN_Shifting","data/snapshots/", "ShiftingLorenz")
 
-# evaluate_snapshots("Results/external_inputs/StopBurstBN_nlt/","last_model.bson", "nltPLRNN_SBBN", "data/snapshots/")
-# evaluate_snapshots("Results/external_inputs/StopBurstBN_nlt/","4050.bson", "nltPLRNN_SBBN_2", "data/snapshots/")
-# evaluate_snapshots("Results/external_inputs/StopBurstBN_mlp/","last_model.bson", "mlpPLRNN_SBBN", "data/snapshots/")
+# evaluate_snapshots("Results/external_inputs/StopBurstBN_nlt/","last_model.bson", "nltPLRNN_SBBN", "data/snapshots/", "StopBurstBN")
+# evaluate_snapshots("Results/external_inputs/StopBurstBN_nlt/","4050.bson", "nltPLRNN_SBBN_2", "data/snapshots/", "StopBurstBN")
+# evaluate_snapshots("Results/external_inputs/StopBurstBN_mlp/","last_model.bson", "mlpPLRNN_SBBN", "data/snapshots/", "StopBurstBN")
 
-# evaluate_snapshots("Results/external_inputs/ShrinkingLorenz_nlt/","last_model.bson", "nltPLRNN_ShrinkingLorenz", "data/snapshots/")
-# evaluate_snapshots("Results/external_inputs/ShrinkingLorenz_nlt/","pre_last.bson", "nltPLRNN_ShrinkingLorenz_2", "data/snapshots/")
-# evaluate_snapshots("Results/external_inputs/ShrinkingLorenz_nlt/","preprelast.bson", "nltPLRNN_ShrinkingLorenz_3", "data/snapshots/")
+# evaluate_snapshots("Results/external_inputs/ShrinkingLorenz_nlt/","last_model.bson", "nltPLRNN_ShrinkingLorenz", "data/snapshots/", "ShiftingLorenz")
+# evaluate_snapshots("Results/external_inputs/ShrinkingLorenz_nlt/","pre_last.bson", "nltPLRNN_ShrinkingLorenz_2", "data/snapshots/", "ShiftingLorenz")
+# evaluate_snapshots("Results/external_inputs/ShrinkingLorenz_nlt/","preprelast.bson", "nltPLRNN_ShrinkingLorenz_3", "data/snapshots/", "ShiftingLorenz")
 
-evaluate_snapshots("Results/external_inputs/Paper_base/","model_5000.bson", "nlt_Paperlorenz", "data/snapshots/")
+# evaluate_snapshots("Results/external_inputs/Paper_base/","model_5000.bson", "nlt_Paperlorenz", "data/snapshots/", "PaperLorenzBigChange")
 
 
-# evaluate_snapshots("Results/external_inputs/StopBurstBN_nlt_p1/","last_1.bson", "nltPLRNN_SBBN_p1", "data/snapshots/")
-# evaluate_snapshots("Results/external_inputs/StopBurstBN_nlt_p1/","last_2.bson", "nltPLRNN_SBBN_p1_2", "data/snapshots/")
-# evaluate_snapshots("Results/external_inputs/StopBurstBN_mlp_p1/","last_model.bson", "mlpPLRNN_SBBN_p1", "data/snapshots/")
-# evaluate_snapshots("Results/external_inputs/StopBurstBN_nlt_unc/", "last_model.bson", "nltPLRNN_SBBN_unc_1", "data/snapshots/")
-# evaluate_snapshots("Results/external_inputs/StopBurstBN_nlt_unc/", "2850.bson", "nltPLRNN_SBBN_unc_2", "data/snapshots/")
+# evaluate_snapshots("Results/external_inputs/StopBurstBN_nlt_p1/","last_1.bson", "nltPLRNN_SBBN_p1", "data/snapshots/", "StopBurstBN")
+# evaluate_snapshots("Results/external_inputs/StopBurstBN_nlt_p1/","last_2.bson", "nltPLRNN_SBBN_p1_2", "data/snapshots/", "StopBurstBN")
+# evaluate_snapshots("Results/external_inputs/StopBurstBN_mlp_p1/","last_model.bson", "mlpPLRNN_SBBN_p1", "data/snapshots/", "StopBurstBN")
+# evaluate_snapshots("Results/external_inputs/StopBurstBN_nlt_unc/", "last_model.bson", "nltPLRNN_SBBN_unc_1", "data/snapshots/", "StopBurstBN")
+# evaluate_snapshots("Results/external_inputs/StopBurstBN_nlt_unc/", "2850.bson", "nltPLRNN_SBBN_unc_2", "data/snapshots/", "StopBurstBN")
 
 
 # check_around_snapshots("Results/external_inputs/ShiftingLorenz_nlt/002/", "last_model.bson")
 # check_around_snapshots("Results/external_inputs/ExplodingLorenz_nlt/001/","last_model.bson")
 # check_around_snapshots("Results/external_inputs/StopBurstBN_nlt/", "4050.bson")
 # check_around_snapshots("Results/external_inputs/ShrinkingLorenz_nlt/","last_model.bson")
+check_around_snapshots("Results/external_inputs/ad_affine/", "model_2000.bson", )
 
 # eval_wo_ext("Results/external_inputs/StopBurstBN_nlt/last_model.bson" , "snapshots_bad")
 # eval_wo_ext("Results/external_inputs/StopBurstBN_nlt/4050.bson",  "snapshots_good")

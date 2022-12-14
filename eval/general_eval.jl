@@ -39,7 +39,7 @@ function evaluate(Results_path::String, model_name::String, name::String)
     plot_reconstruction(reconstruction, og_data, name)
 end
 
-for i in [20,40,300,700,1500,2000,3000]#,4740,5000]
-    evaluate("Results/external_inputs/mydiff/", "checkpoints/model_$i.bson", "reconstruction$(i)_my")
+for i in [20,100,300,1000,2000,3000]#,4740,5000]
+    evaluate("Results/external_inputs/my_affine/", "model_$i.bson", "my_reconstruction$(i)_ad")
 end
 

@@ -16,7 +16,7 @@
     "prediction": false,
 
     "model": "ptPLRNN",
-    "optional_model_args": ["mlp"],
+    "optional_model_args": ["ar"],
     "observation_model": "Identity",
     "latent_dim": 3,
     "hidden_dim": 50,
