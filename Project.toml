@@ -29,6 +29,7 @@ Zygote = "e88e6eb3-aa80-5325-afca-941959d7151f"
 ArgParse = "1"
 Flux = "0.13"
 NPZ = "0.4"
+ReverseDiff = "1"
 Revise = "3"
 julia = "1"
 
