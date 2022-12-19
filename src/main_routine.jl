@@ -17,8 +17,10 @@ function main_training_routine(args::AbstractDict)
     device = get_device(args)
     if contains(args["path_to_data"], "Paper")
         args["path_to_inputs"] = "data/time_data/time_PaperLorenzBigChange.npy"
+        args["weak_tf_alpha"] = 0.1f0
     elseif contains(args["path_to_data"], "Stop")
         args["path_to_inputs"] = "data/time_data/time_StopBurstBN.npy"
+        args["weak_tf_alpha"] = 0.5f0
     end
     println(args["path_to_inputs"])
     # check if external inputs are provided
