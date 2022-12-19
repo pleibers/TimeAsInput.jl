@@ -1,7 +1,7 @@
 include("paramModel.jl")
 
 # shallowPLRNN where parameters are inferred from time
-mutable struct ptPLRNN{APM<:AbstractParameterModel,APV<:AbstractParameterModel,M<:AbstractMatrix} <: BPTT.AbstractShallowPLRNN
+mutable struct ptPLRNN{APM<:AbstractParameterModel,APV<:AbstractParameterModel,M<:AbstractMatrix, f<:Function} <: BPTT.AbstractShallowPLRNN
     Aₜ::APV
     W₁ₜ::APM
     W₂ₜ::APM
@@ -9,19 +9,21 @@ mutable struct ptPLRNN{APM<:AbstractParameterModel,APV<:AbstractParameterModel,M
     h₂ₜ::APV
 
     t::M
+    Φ::f
 end
 @functor ptPLRNN (Aₜ, W₁ₜ, W₂ₜ, h₁ₜ, h₂ₜ)
 
 # initialization/constructor
 # no options without external inputs, as it is just a shallowPLRNN then
 # no options for multidimensional input (yet)
-function ptPLRNN(M::Int, hidden_dim::Int, PM_type::String, K::Int)
+function ptPLRNN(M::Int, hidden_dim::Int, PM_type::String, activation_fun::String, K::Int)
     @assert K == 1 "external input dimension $K != 1, is not supported yet"
     init_PM = @eval $(Symbol(PM_type))
     A, _, h₁ = init_PM.(initialize_A_W_h(M))
     h₂ = init_PM(zeros(Float32, hidden_dim))
     W₁, W₂ = init_PM.(initialize_Ws(M, hidden_dim))
-    return ptPLRNN(A, W₁, W₂, h₁, h₂, randn(Float32, 10, 1))
+    Φ = @eval $Symbol(activation_fun)
+    return ptPLRNN(A, W₁, W₂, h₁, h₂, randn(Float32, 10, 1), Φ)
 end
 
 function BPTT.PLRNNs.step(m::ptPLRNN, z::AbstractVecOrMat)
@@ -37,7 +39,7 @@ function BPTT.PLRNNs.step(m::ptPLRNN, z::AbstractMatrix, time::AbstractMatrix)
     return reduce(hcat, z)
 end
 
-mutable struct nswPLRNN{APM<:AbstractParameterModel,V<:AbstractVector,M<:AbstractMatrix} <: BPTT.AbstractShallowPLRNN
+mutable struct nswPLRNN{APM<:AbstractParameterModel,V<:AbstractVector,M<:AbstractMatrix, f<:Function} <: BPTT.AbstractShallowPLRNN
     A::V
     W₁ₜ::APM
     W₂ₜ::APM
@@ -45,25 +47,27 @@ mutable struct nswPLRNN{APM<:AbstractParameterModel,V<:AbstractVector,M<:Abstrac
     h₂::V
 
     t::M
+    Φ::f
 end
 @functor nswPLRNN (A, W₁ₜ, W₂ₜ, h₁, h₂)
 
-function nswPLRNN(M::Int, hidden_dim::Int, PM_type::String, K::Int)
+function nswPLRNN(M::Int, hidden_dim::Int, PM_type::String, activation_fun::String, K::Int)
     @assert K == 1 "external input dimension $K != 1, is not supported yet"
     init_PM = @eval $(Symbol(PM_type))
     A, _, h₁ = initialize_A_W_h(M)
     h₂ = zeros(Float32, hidden_dim)
     W₁, W₂ = init_PM.(initialize_Ws(M, hidden_dim))
-    return nswPLRNN(A, W₁, W₂, h₁, h₂, randn(Float32, 10, 1))
+    Φ = @eval $Symbol(activation_fun)
+    return nswPLRNN(A, W₁, W₂, h₁, h₂, randn(Float32, 10, 1), Φ)
 end
 
 function BPTT.PLRNNs.step(m::nswPLRNN, z::AbstractVecOrMat)
-    return m.A .* z .+ m.W₁ₜ(0) * relu.(m.W₂ₜ(0) * z .+ m.h₂) .+ m.h₁
+    return m.A .* z .+ m.W₁ₜ(0) * m.Φ.(m.W₂ₜ(0) * z .+ m.h₂) .+ m.h₁
 end
 
 function BPTT.PLRNNs.step(m::nswPLRNN, z::AbstractVector, time::AbstractVector)
     t = time[1]
-    return m.A .* z .+ m.W₁ₜ(t) * relu.(m.W₂ₜ(t) * z .+ m.h₂) .+ m.h₁
+    return m.A .* z .+ m.W₁ₜ(t) * m.Φ.(m.W₂ₜ(t) * z .+ m.h₂) .+ m.h₁
 end
 function BPTT.PLRNNs.step(m::nswPLRNN, z::AbstractMatrix, time::AbstractMatrix)
     z = m.(eachcol(z), eachcol(time))
@@ -72,7 +76,7 @@ end
 
 function ns_step(z::AbstractVector, params::Tuple{T,S,S,T,T}) where {T,S}
     A, W₁, W₂, h₁, h₂ = params
-    return A .* z .+ W₁ * relu.(W₂ * z .+ h₂) .+ h₁
+    return A .* z .+ W₁ * m.Φ.(W₂ * z .+ h₂) .+ h₁
 end
 
 function get_params_at_T(m::ptPLRNN, time::AbstractVector)

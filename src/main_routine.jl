@@ -15,7 +15,12 @@ function main_training_routine(args::AbstractDict)
 
     # get computing device
     device = get_device(args)
-
+    if contains(args["path_to_data"], "Paper")
+        args["path_to_inputs"] = "data/time_data/time_PaperLorenzBigChange.npy"
+    elseif contains(args["path_to_data"], "Stop")
+        args["path_to_inputs"] = "data/time_data/time_StopBurstBN.npy"
+    end
+    println(args["path_to_inputs"])
     # check if external inputs are provided
     if !isempty(args["path_to_inputs"])
         println("Path to external inputs provided, initializing ExternalInputsDataset.")

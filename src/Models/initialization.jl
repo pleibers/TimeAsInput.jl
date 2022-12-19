@@ -93,3 +93,4 @@ function build_mlp(; n_hidden=32, n_input=1, n_output=3)
         Dense(n_input => n_hidden, relu, init=uniform_init),
         Dense(n_hidden => n_output, init=uniform_init))
 end
+    
