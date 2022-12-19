@@ -41,9 +41,20 @@ function ubermain(n_runs::Int)
     # load defaults with correct data types
     defaults = parse_args([], args_table())
 
+    combinations = Base.Iterators.product(["affine","mlp","ar"], ["relu", "tanh"])
+    opt_model_args = Vector{Vector{String}}()
+    for comb in combinations
+        x = collect(comb)
+        push!(opt_model_args, x)
+    end
+
     # list arguments here
     args = BPTT.ArgVec([
-        Argument("model", ["nltPLRNN", "mlpPLRNN"], "m")
+        Argument("path_to_data", ["data/benchmarks/StopBurstBN.npy", "data/benchmarks/PaperLorenzBigChange.npy"], "d"),
+        Argument("optional_model_args", opt_model_args, "pm"),
+        Argument("hidden_dim", [200,600],"h"),
+        Argument("model", ["ptPLRNN","nswPLRNN"],"m"),
+        Argument("lat_model_regularization",[0.0,0.1,0.3],"r")
     ])
 
     # prepare tasks

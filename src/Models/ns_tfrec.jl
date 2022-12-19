@@ -43,7 +43,7 @@ function (tfrec::nsTFRecur)(x::AbstractMatrix, s::AbstractMatrix, t::Int)
     # perform one step using the model, update model state
     # precompute the non stationary parameters
     params = @views [get_params_at_T(tfrec.model, s[:, i]) for i in axes(s, 2)]
-    zₜ = ns_step.(eachcol(z), params)
+    zₜ = ns_step.(eachcol(z), params, Ref(tfrec.model.Φ))
     z = reduce(hcat, zₜ)
 
     # force
@@ -83,7 +83,7 @@ function (tfrec::nsWeakTFRecur)(z⃰::AbstractMatrix, s::AbstractMatrix, t::Int)
     # precompute the non stationary parameters
     params = @views get_params_at_T.(Ref(tfrec.model), eachcol(s))
 
-    zₜ = ns_step.(eachcol(z), params)
+    zₜ = ns_step.(eachcol(z), params, Ref(tfrec.model.Φ))
     z = reduce(hcat, zₜ)
     # weak tf
     z̃ = @views force(z[1:D, :], z⃰, tfrec.α)
@@ -95,7 +95,7 @@ end
 
 
 function choose_recur_wrapper(
-    m::ptPLRNN,
+    m::AbstractNSPLRNN,
     d::AbstractDataset,
     O::ObservationModel,
     M::Int,
