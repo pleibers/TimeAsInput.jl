@@ -16,11 +16,11 @@
     "prediction": false,
 
     "model": "ptPLRNN",
-    "optional_model_args": ["ar"],
+    "optional_model_args": ["mlp"],
     "observation_model": "Identity",
     "latent_dim": 3,
-    "hidden_dim": 50,
-    "lat_model_regularization": 0.0,
+    "hidden_dim": 20,
+    "lat_model_regularization": 0.1,
 
     "weak_tf_alpha": 0.5,
     "batch_size": 16,
@@ -40,7 +40,7 @@
     "gradient_clipping_norm": 10.0,
     "teacher_forcing_interval": 16,
     "batches_per_epoch": 50,
-    "image_saving_interval": 100,
+    "image_saving_interval": 1,
     "gaussian_noise_level": 0.05,
     "D_stsp_bins": 30,
     "D_stsp_scaling": 0.3,

@@ -81,7 +81,7 @@ function (tfrec::nsWeakTFRecur)(z⃰::AbstractMatrix, s::AbstractMatrix, t::Int)
     z = tfrec.z
     D, M = size(z⃰, 1), size(z, 1)
     # precompute the non stationary parameters
-    params = @views [get_params_at_T(tfrec.model, s[:, i]) for i in axes(s, 2)]
+    params = @views get_params_at_T.(Ref(tfrec.model), eachcol(s))
 
     zₜ = ns_step.(eachcol(z), params)
     z = reduce(hcat, zₜ)

@@ -1,9 +1,9 @@
-using ChainRulesCore: @thunk, Tangent, NoTangent, ZeroTangent, HasReverseMode, RuleConfig, rrule_via_ad, unthunk
-import ChainRulesCore
+
 using Flux: @functor
 using Flux
-using LinearAlgebra
 using ForwardDiff, ReverseDiff
+using LinearAlgebra
+using Zygote: hessian
 
 abstract type AbstractParameterModel end
 
@@ -23,12 +23,6 @@ end
 derivative(m::AbstractParameterModel, time::AbstractMatrix) = [norm(derivative(m, t)) for t in time]
 second_derivative(m::AbstractParameterModel, time::AbstractMatrix) = [norm(second_derivative(m, t)) for t in time]
 
-# include("initialization.jl")
-# using BPTT: uniform
-# PM = affine(rand(Float32, 3))
-# using Zygote: gradient
-# using BenchmarkTools
-# @btime gradient(x->sum(PM(x)), 2f0)
 
 function param_at_T(m::LinearParameterModel, x::AbstractFloat)
     return m.W .* x .+ m.b
@@ -50,27 +44,24 @@ mutable struct ARParameterModel{MV<:AbstractVecOrMat} <: AbstractParameterModel
     a₄::MV
     a₅::MV
     a₆::MV
-    a₇::MV
-    a₈::MV
-    a₉::MV
 end
 @functor ARParameterModel
 
 function ar(θ::AbstractVecOrMat)
-    as = (uniform_init(size(θ)) for i in 1:10)
+    as = (uniform_init(size(θ)) for i in 1:7)
     return ARParameterModel(as...)
 end
 
 function param_at_T(m::ARParameterModel, x::AbstractFloat)
-    return m.a₀ .+ m.a₁ .* x .+ m.a₂ .* x^2 .+ m.a₃ .* x^3 .+ m.a₄ .* x^4 .+ m.a₅ .* x^5 .+ m.a₆ .* x^6 .+ m.a₇ .* x^7 .+ m.a₈ .* x^8 .+ m.a₉ .* x^9
+    return m.a₀ .+ m.a₁ .* x .+ m.a₂ .* x^2 .+ m.a₃ .* x^3 .+ m.a₄ .* x^4 .+ m.a₅ .* x^5 .+ m.a₆ .* x^6
 end
 
 
 function derivative(m::ARParameterModel, x::AbstractFloat)
-    return m.a₁ .+ 2 .* m.a₂ .* x .+ 3 .* m.a₃ .* x^2 .+ 4 .* m.a₄ .* x^3 .+ 5 .* m.a₅ .* x^4 .+ 6 .* m.a₆ .* x^5 .+ 7 .* m.a₇ .* x^6 .+ 8 .* m.a₈ .* x^7 .+ 9 .* m.a₉ .* x^8
+    return m.a₁ .+ 2 .* m.a₂ .* x .+ 3 .* m.a₃ .* x^2 .+ 4 .* m.a₄ .* x^3 .+ 5 .* m.a₅ .* x^4 .+ 6 .* m.a₆ .* x^5 
 end
 function second_derivative(m::ARParameterModel, x::AbstractFloat)
-    return 2 .* m.a₂ .+ 6 .* m.a₃ .* x .+ 12 .* m.a₄ .* x^2 .+ 20 .* m.a₅ .* x^3 .+ 30 .* m.a₆ .* x^4 .+ 42 .* m.a₇ .* x^5 .+ 56 .* m.a₈ .* x^6 .+ 72 .* m.a₉ .* x^7
+    return 2 .* m.a₂ .+ 6 .* m.a₃ .* x .+ 12 .* m.a₄ .* x^2 .+ 20 .* m.a₅ .* x^3 .+ 30 .* m.a₆ .* x^4
 end
 
 
@@ -93,13 +84,16 @@ function param_at_T(m::MLPParameterModel, x::AbstractFloat)
 end
 
 
-derivative(m::MLPParameterModel, time::AbstractFloat) = reshape(Flux.jacobian(m, time)[1], m.shape)
+derivative(m::MLPParameterModel, time::AbstractFloat) = Flux.gradient(x->sum(m(x)), time)
 function second_derivative(m::MLPParameterModel, time::AbstractFloat)
-    f(x) = sum(m.mlp(x))
-    hess = ForwardDiff.jacobian(x -> ReverseDiff.gradient(f, x), [time])
-    return hess
+    f(x) = sum(m.mlp([x]))
+    return hessian(f, time)
 end
 
+# include("initialization.jl")
+# using BPTT: uniform
+# PM = mlp(rand(Float32, 3))
+# @show derivative(PM, 1.0f0)
 
 # @inbounds function ChainRulesCore.rrule(
 #     ::typeof(param_at_T),
