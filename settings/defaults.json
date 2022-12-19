@@ -7,12 +7,7 @@
     "run": 1,
     "device": "cpu",
     "scalar_saving_interval": 1,
-
-    "affine_transformation": "linear",
-    "affine_transform_coeff": [
-        1.0,
-        0.0
-    ],
+    
     "prediction": false,
 
     "model": "ptPLRNN",

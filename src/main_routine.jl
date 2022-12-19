@@ -1,6 +1,6 @@
 using Benchmarks: TP_loc
 
-Base.Float32(V::Vector{Float64}) = Base.Float32.(V)
+Base.Float32(V::AbstractVector) = Base.Float32.(V)
 """
     main_routine(args)
 
@@ -31,12 +31,6 @@ function main_training_routine(args::AbstractDict)
 
     # do the affine transformation of time, as only time itself is loaded
     if typeof(D) <: ExternalInputsDataset
-        trans_coeff = args["affine_transform_coeff"]
-        affine_transformation = parse_transform(args["affine_transformation"], trans_coeff)
-
-        external_inputs = Float32.(affine_transformation.(D.S[:,1])) # to have type consistency
-        ext_in = permutedims(reduce(hcat, external_inputs), (2,1))
-        D = ExternalInputsDataset(D.X, ext_in,"time_in")
         if args["prediction"]
             D, D_test = train_test_split(D, TP_loc[get_model_from_path(args["path_to_data"])])
         end
@@ -46,7 +40,7 @@ function main_training_routine(args::AbstractDict)
     plrnn = initialize_model(args, D;mod=@__MODULE__) |> device
 
     if typeof(plrnn) <: ptPLRNN
-        plrnn.t = ext_in
+        plrnn.t = D.S
     end
 
     # observation_model

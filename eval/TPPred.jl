@@ -27,12 +27,7 @@ function predict_TP(Results_path::String, model_name::String, name::String, data
     og_data = npzread("data/benchmarks/$data_system.npy")
     time_data = npzread("data/time_data/time_$data_system.npy")
     @assert time_data[1] == -1 "data not normalized"
-
-    trans_coeff = args["affine_transform_coeff"]
-    affine_transformation = parse_transform(args["affine_transformation"], trans_coeff)
-
-    external_inputs = Float32.(affine_transformation.(time_data)) # to have type consistency
-    ext_in = permutedims(reduce(hcat, external_inputs), (2, 1))
+    ext_in = time_data
     println("generating...")
     pred = generate(model, og_data[1, :], ext_in, size(ext_in, 1))
 
