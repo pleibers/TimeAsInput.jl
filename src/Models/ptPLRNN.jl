@@ -24,7 +24,7 @@ function ptPLRNN(M::Int, hidden_dim::Int, PM_type::String, activation_fun::Strin
     A, _, h₁ = init_PM.(initialize_A_W_h(M))
     h₂ = init_PM(zeros(Float32, hidden_dim))
     W₁, W₂ = init_PM.(initialize_Ws(M, hidden_dim))
-    Φ = @eval $Symbol(activation_fun)
+    Φ = @eval $(Symbol(activation_fun))
     return ptPLRNN(A, W₁, W₂, h₁, h₂, randn(Float32, 10, 1), Φ)
 end
 
