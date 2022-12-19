@@ -1,7 +1,9 @@
 include("paramModel.jl")
 
+abstract type AbstractNSPLRNN <: BPTT.AbstractShallowPLRNN end
+
 # shallowPLRNN where parameters are inferred from time
-mutable struct ptPLRNN{APM<:AbstractParameterModel,APV<:AbstractParameterModel,M<:AbstractMatrix, f<:Function} <: BPTT.AbstractShallowPLRNN
+mutable struct ptPLRNN{APM<:AbstractParameterModel,APV<:AbstractParameterModel,M<:AbstractMatrix, f<:Function} <: AbstractNSPLRNN
     Aₜ::APV
     W₁ₜ::APM
     W₂ₜ::APM
@@ -39,7 +41,7 @@ function BPTT.PLRNNs.step(m::ptPLRNN, z::AbstractMatrix, time::AbstractMatrix)
     return reduce(hcat, z)
 end
 
-mutable struct nswPLRNN{APM<:AbstractParameterModel,V<:AbstractVector,M<:AbstractMatrix, f<:Function} <: BPTT.AbstractShallowPLRNN
+mutable struct nswPLRNN{APM<:AbstractParameterModel,V<:AbstractVector,M<:AbstractMatrix, f<:Function} <: AbstractNSPLRNN
     A::V
     W₁ₜ::APM
     W₂ₜ::APM
@@ -57,7 +59,7 @@ function nswPLRNN(M::Int, hidden_dim::Int, PM_type::String, activation_fun::Stri
     A, _, h₁ = initialize_A_W_h(M)
     h₂ = zeros(Float32, hidden_dim)
     W₁, W₂ = init_PM.(initialize_Ws(M, hidden_dim))
-    Φ = @eval $Symbol(activation_fun)
+    Φ = @eval $(Symbol(activation_fun))
     return nswPLRNN(A, W₁, W₂, h₁, h₂, randn(Float32, 10, 1), Φ)
 end
 

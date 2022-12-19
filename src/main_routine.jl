@@ -23,17 +23,24 @@ function main_training_routine(args::AbstractDict)
         args["weak_tf_alpha"] = 0.5f0
     end
     println(args["path_to_inputs"])
+
+    run = true
+    if args["model"] == "ptPLRNN" && args["lat_model_regularization"] != 0.0f0
+        if "ar" in args["optional_model_args"] || "mlp" in args["optional_model_args"]
+            run = false
+        end
+    end
     # check if external inputs are provided
     if !isempty(args["path_to_inputs"])
         println("Path to external inputs provided, initializing ExternalInputsDataset.")
         D = ExternalInputsDataset(
             args["path_to_data"],
             args["path_to_inputs"];
-            device = device,
+            device=device
         )
     else
         println("No path to external inputs provided, initializing vanilla Dataset.")
-        D = Dataset(args["path_to_data"]; device = device)
+        D = Dataset(args["path_to_data"]; device=device)
     end
 
     # do the affine transformation of time, as only time itself is loaded
@@ -42,25 +49,29 @@ function main_training_routine(args::AbstractDict)
             D, D_test = train_test_split(D, TP_loc[get_model_from_path(args["path_to_data"])])
         end
     end
-    
-    # model
-    plrnn = initialize_model(args, D;mod=@__MODULE__) |> device
+    if run 
+            
+        # model
+        plrnn = initialize_model(args, D; mod=@__MODULE__) |> device
 
-    if typeof(plrnn) <: ptPLRNN
-        plrnn.t = D.S
+        if typeof(plrnn) <: AbstractNSPLRNN
+            plrnn.t = D.S
+        end
+
+        # observation_model
+        O = initialize_observation_model(args, D) |> device
+
+        # optimizer
+        opt = initialize_optimizer(args)
+
+        # create directories
+        save_path = create_folder_structure(args["experiment"], args["name"], args["run"])
+
+        # store hypers
+        store_hypers(args, save_path)
+
+        train_!(plrnn, O, D, opt, args, save_path)
+    else
+        println("not running because of memory")
     end
-
-    # observation_model
-    O = initialize_observation_model(args, D) |> device
-    
-    # optimizer
-    opt = initialize_optimizer(args)
-
-    # create directories
-    save_path = create_folder_structure(args["experiment"], args["name"], args["run"])
-
-    # store hypers
-    store_hypers(args, save_path)
-
-    train_!(plrnn, O, D, opt, args, save_path)
 end

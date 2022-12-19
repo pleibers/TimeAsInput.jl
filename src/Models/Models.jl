@@ -14,7 +14,7 @@ include("multiPLRNN.jl")
 export multiPLRNN
 
 include("ptPLRNN.jl")
-export ptPLRNN, nswPLRNN
+export ptPLRNN, nswPLRNN, AbstractNSPLRNN
     
 include("ns_tfrec.jl")
 export nsTFRecur, nsWeakTFRecur
