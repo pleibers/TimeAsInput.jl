@@ -13,8 +13,13 @@ export mlpPLRNN
 include("multiPLRNN.jl")
 export multiPLRNN
 
+include("paramModel.jl")
+
 include("ptPLRNN.jl")
-export ptPLRNN, nswPLRNN, AbstractNSPLRNN
+export ptPLRNN, AbstractNSPLRNN
+
+include("nsPLRNN.jl")
+export nswPLRNN, nsPLRNN
     
 include("ns_tfrec.jl")
 export nsTFRecur, nsWeakTFRecur
