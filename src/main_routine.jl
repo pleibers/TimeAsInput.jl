@@ -25,7 +25,7 @@ function main_training_routine(args::AbstractDict)
     println(args["path_to_inputs"])
 
     run = true
-    if args["model"] == "ptPLRNN" && args["lat_model_regularization"] != 0.0f0
+    if args["lat_model_regularization"] != 0.0f0
         if "ar" in args["optional_model_args"] || "mlp" in args["optional_model_args"]
             run = false
         end
@@ -49,8 +49,9 @@ function main_training_routine(args::AbstractDict)
             D, D_test = train_test_split(D, TP_loc[get_model_from_path(args["path_to_data"])])
         end
     end
-    if run 
-            
+
+    run = args["run_anyway"] ? true : run
+    if run
         # model
         plrnn = initialize_model(args, D; mod=@__MODULE__) |> device
 
@@ -72,6 +73,8 @@ function main_training_routine(args::AbstractDict)
 
         train_!(plrnn, O, D, opt, args, save_path)
     else
+        println("-"^50)
         println("not running because of memory")
+        println("-"^50)
     end
 end

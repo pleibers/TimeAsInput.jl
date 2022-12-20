@@ -8,6 +8,11 @@ function args_table()
         help = "train on predition task"
         arg_type = Bool
         default = defaults["prediction"]
+
+        "--run_anyway"
+        help = "override memory problem"
+        arg_type = Bool
+        default = defaults["run_anyway"]
     end
     return settings
 end

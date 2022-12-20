@@ -1,35 +1,32 @@
 {
     "experiment": "external_inputs",
-    "name": "nsPLRNN",
+    "name": "christmas_run",
     "path_to_data": "data/benchmarks/PaperLorenzBigChange.npy",
     "path_to_inputs": "data/time_data/time_PaperLorenzBigChange.npy",
-
     "run": 1,
     "device": "cpu",
-    "scalar_saving_interval": 25,
-
+    "scalar_saving_interval": 50,
     "prediction": false,
-
+    "run_anyway": false,
     "model": "nswPLRNN",
-    "optional_model_args": ["affine", "relu"],
+    "optional_model_args": [
+        "ar",
+        "relu"
+    ],
     "observation_model": "Identity",
     "latent_dim": 3,
-    "hidden_dim": 50,
+    "hidden_dim": 200,
     "lat_model_regularization": 0.0,
-
-    "weak_tf_alpha": 0.5,
+    "weak_tf_alpha": 0.1,
     "batch_size": 16,
     "sequence_length": 350,
-
     "start_lr": 1e-3,
     "end_lr": 1e-6,
-    "epochs": 3000,
-
+    "epochs": 3500,
     "MAR_ratio": 0.0,
     "MAR_lambda": 0.005,
     "obs_model_regularization": 0.0,
     "optimizer": "RADAM",
-
     "num_bases": 30,
     "hidden_layers": "20",
     "gradient_clipping_norm": 10.0,
