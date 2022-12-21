@@ -1,7 +1,6 @@
 
 using Flux: @functor
 using Flux
-using ForwardDiff, ReverseDiff
 using LinearAlgebra
 using Zygote: hessian
 

@@ -50,7 +50,7 @@ function get_params_at_T(m::ptPLRNN, time::AbstractVector)
 end
 
 
-function BPTT.TFTraining.regularize(m::ptPLRNN, λ::Float32; penalty=l2_penalty, λ₂=1.0)
+function BPTT.TFTraining.regularize(m::ptPLRNN, λ::Float32; penalty=l2_penalty)
     A_reg_1 = @views penalty(derivative(m.Aₜ, m.t))
     W₁_reg_1 = @views penalty(derivative(m.W₁ₜ, m.t))
     W₂_reg_1 = @views penalty(derivative(m.W₂ₜ, m.t))
@@ -63,7 +63,7 @@ function BPTT.TFTraining.regularize(m::ptPLRNN, λ::Float32; penalty=l2_penalty,
     h₁_reg_2 = @views penalty(second_derivative(m.h₁ₜ, m.t))
     h₂_reg_2 = @views penalty(second_derivative(m.h₂ₜ, m.t))
     λ₁ = λ
-    return λ₁ * (A_reg_1 + W₁_reg_1 + W₂_reg_1 + h₁_reg_1 + h₂_reg_1) + λ * λ₂ * (A_reg_2 + W₁_reg_2 + W₂_reg_2 + h₁_reg_2 + h₂_reg_2)
+    return λ₁ * (A_reg_1 + W₁_reg_1 + W₂_reg_1 + h₁_reg_1 + h₂_reg_1 + A_reg_2 + W₁_reg_2 + W₂_reg_2 + h₁_reg_2 + h₂_reg_2)
 end
 l2_penalty(θ) = isnothing(θ) ? 0 : sum(abs2, θ)
 l1_penalty(θ) = isnothing(θ) ? 0 : sum(abs, θ)

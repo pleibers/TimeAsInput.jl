@@ -39,14 +39,14 @@ function get_params_at_T(m::nswPLRNN, time::AbstractVector)
     return m.A, m.W₁ₜ(t), m.W₂ₜ(t), m.h₁, m.h₂
 end
 
-function BPTT.TFTraining.regularize(m::nswPLRNN, λ::Float32; penalty=l2_penalty, λ₂=1.0)
+function BPTT.TFTraining.regularize(m::nswPLRNN, λ::Float32; penalty=l2_penalty)
     W₁_reg_1 = @views penalty(derivative(m.W₁ₜ, m.t))
     W₂_reg_1 = @views penalty(derivative(m.W₂ₜ, m.t))
 
     W₁_reg_2 = @views penalty(second_derivative(m.W₁ₜ, m.t))
     W₂_reg_2 = @views penalty(second_derivative(m.W₂ₜ, m.t))
     λ₁ = λ
-    return λ₁ * (W₁_reg_1 + W₂_reg_1) + λ * λ₂ * (W₁_reg_2 + W₂_reg_2)
+    return λ₁ * (W₁_reg_1 + W₂_reg_1 + W₁_reg_2 + W₂_reg_2)
 end
 
 
@@ -91,10 +91,10 @@ function get_params_at_T(m::nsPLRNN, time::AbstractVector)
     return m.A, m.W₁, m.W₂ₜ(t), m.h₁, m.h₂
 end
 
-function BPTT.TFTraining.regularize(m::nsPLRNN, λ::Float32; penalty=l2_penalty, λ₂=1.0)
+function BPTT.TFTraining.regularize(m::nsPLRNN, λ::Float32; penalty=l2_penalty)
     W₂_reg_1 = @views penalty(derivative(m.W₂ₜ, m.t))
 
     W₂_reg_2 = @views penalty(second_derivative(m.W₂ₜ, m.t))
     λ₁ = λ
-    return λ₁ *  W₂_reg_1 + λ * λ₂ * W₂_reg_2
+    return λ₁ *  W₂_reg_1  * W₂_reg_2
 end
