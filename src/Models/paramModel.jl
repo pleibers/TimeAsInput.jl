@@ -89,56 +89,29 @@ function second_derivative(m::MLPParameterModel, time::AbstractFloat)
     return hessian(f, time)
 end
 
-# include("initialization.jl")
-# using BPTT: uniform
-# PM = mlp(rand(Float32, 3))
-# @show derivative(PM, 1.0f0)
+mutable struct VARParameterModel{M<:AbstractMatrix} <: AbstractParameterModel
+    P₀::M
+    R::M
+    B::M
+end
+@functor VARParameterModel
 
-# @inbounds function ChainRulesCore.rrule(
-#     ::typeof(param_at_T),
-#     PM::LinearParameterModel,
-#     x::AbstractFloat
-# )
-#     y = param_at_T(PM, x)
-#     function PM_pullback(ΔΩ)
-#         p̄_at_T = NoTangent()
-#         P̄M = Tangent{LinearParameterModel}(; W=ΔΩ * x, b=ΔΩ)
-#         x̄ = @thunk(sum(PM.W .* ΔΩ))
-#         return p̄_at_T, P̄M, x̄
-#     end
-#     return y, PM_pullback
-# end
+function var(θ::AbstractVecOrMat)
+    P₀ = θ
+    R = uniform_init(size(θ,1), size(θ,1))
+    B = uniform_init(size(θ,1))
+    return VARParameterModel(P₀, R, B)
+end
 
-# @inbounds function ChainRulesCore.rrule(
-#     ::typeof(param_at_T),
-#     PM::ARParameterModel,
-#     x::AbstractFloat
-# )
-#     y = param_at_T(PM, x)
-#     function PM_pullback(ΔΩ)
-#         p̄_at_T = NoTangent()
-#         P̄M = Tangent{ARParameterModel}(; a₀=ΔΩ, a₁=ΔΩ .* x, a₂=ΔΩ .* x^2, a₃=ΔΩ .* x^3, a₄=ΔΩ .* x^4, a₅=ΔΩ .* x^5, a₆=ΔΩ .* x^6, a₇=ΔΩ .* x^7, a₈=ΔΩ .* x^8, a₉=ΔΩ .* x^9)
-#         x̄ = @thunk(sum((PM.a₁ .+ 2 .* PM.a₂ .* x .+ 3 .* PM.a₃ .* x^2 .+ 4 .* PM.a₄ .* x^3 .+ 5 .* PM.a₅ .* x^4 .+ 6 .* PM.a₆ .* x^5 .+ 7 .* PM.a₇ .* x^6 .+ 8 .* PM.a₈ .* x^7 .+ 9 .* PM.a₉ .* x^8) .* ΔΩ))
-#         return p̄_at_T, P̄M, x̄
-#     end
-#     return y, PM_pullback
-# end
+function param_at_T(m::VARParameterModel, t::Int64)
+    if m.R == I
+        Pt = m.R^t .* m.P₀' .+ t * m.R^(t - 1) .* m.B
+    else
+        Pt = (I - m.R^t) * inv(I - m.R) .* m.B .+ m.R^t .* m.P₀'
+    end
+    return Pt
+end
 
-# @inbounds function ChainRulesCore.rrule(
-#     config::RuleConfig{>:HasReverseMode},
-#     ::typeof(param_at_T),
-#     PM::MLPParameterModel,
-#     x::AbstractFloat
-# )
-#     y = param_at_T(PM, x)
-#     mlpx, mlp_pullback = rrule_via_ad(config, PM.mlp, [x])
-#     _, reshape_pullback = rrule_via_ad(config, reshape, mlpx, PM.shape)
-#     function PM_pullback(ΔΩ)
-#         p̄_at_T = NoTangent()
-#         P̄M = Tangent{MLPParameterModel}(; mlp=ΔΩ, shape=NoTangent())
-#         _, mlpx̄,_ = reshape_pullback(ΔΩ)
-#         _, x̄ = mlp_pullback(unthunk(mlpx̄))
-#         return p̄_at_T, P̄M, x̄
-#     end
-#     return y, PM_pullback
-# end
+function next_param(m::VARParameterModel,pt::AbstractVecOrMat)
+    return m.R * p .+ m.B
+end

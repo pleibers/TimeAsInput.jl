@@ -1,3 +1,4 @@
+using TimeAsInput.eval: evaluate
 using TimeAsInput
 using BPTT
 using Plots
@@ -8,18 +9,9 @@ using BSON: load
 using Flux
 using Benchmarks: TP_loc
 
-
-Base.Float32(V::Vector{Float64}) = Base.Float32.(V)
-function convert_to_Float32(dict::Dict)
-    for (key, val) in dict
-        dict[key] = val isa AbstractFloat ? Float32(val) : val
-    end
-    return dict
-end
-load_model_(path::String) = load(path, @__MODULE__)[:model]
-
+include("utility.jl")
 function plot_reconstruction(X̃::AbstractMatrix, X::AbstractMatrix, name::String)
-    plot3d(X[:, 1], X[:, 2], X[:, 3], label="Truth", color=:blue,legend=:topleft, title="Reconstruction")
+    plot3d(X[:, 1], X[:, 2], X[:, 3], label="Truth", color=:blue, legend=:topleft, title="Reconstruction")
     plot3d!(X̃[:, 1], X̃[:, 2], X̃[:, 3], label="Reconstruction", color=:red, linealpha=0.8)
     savefig("Figures/evaluation/$name.png")
     println("done...")
@@ -39,7 +31,7 @@ function evaluate(Results_path::String, model_name::String, name::String)
     plot_reconstruction(reconstruction, og_data, name)
 end
 
-for i in [20,100,300,1000,2000,3000]#,4740,5000]
+for i in [20, 100, 300, 1000, 2000, 3000]#,4740,5000]
     evaluate("Results/external_inputs/my_affine/", "model_$i.bson", "my_reconstruction$(i)_ad")
 end
 

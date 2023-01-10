@@ -34,9 +34,14 @@ function BPTT.PLRNNs.step(m::nswPLRNN, z::AbstractMatrix, time::AbstractMatrix)
     z = m.(eachcol(z), eachcol(time))
     return reduce(hcat, z)
 end
+
 function get_params_at_T(m::nswPLRNN, time::AbstractVector)
     t = time[1]
     return m.A, m.W₁ₜ(t), m.W₂ₜ(t), m.h₁, m.h₂
+end
+
+function update_var_param(m::nswPLRNN, params::AbstractVector)
+    return [params[1], next_param(m.W₁ₜ, params[2]), next_param(m.W₂ₜ, params[3]), params[4], params[5]]
 end
 
 function BPTT.TFTraining.regularize(m::nswPLRNN, λ::Float32; penalty=l2_penalty)

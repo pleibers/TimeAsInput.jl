@@ -5,10 +5,10 @@
     "path_to_inputs": "data/time_data/time_PaperLorenzBigChange.npy",
     "run": 1,
     "device": "cpu",
-    "scalar_saving_interval": 50,
+    "scalar_saving_interval": 1,
     "prediction": false,
     "run_anyway": false,
-    "model": "nswPLRNN",
+    "model": "nsPLRNN",
     "optional_model_args": [
         "ar",
         "relu"

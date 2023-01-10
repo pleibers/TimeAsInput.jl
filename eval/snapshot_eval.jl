@@ -1,4 +1,5 @@
 using TimeAsInput
+using PlotFramework
 using BPTT
 using Plots
 using NPZ: npzread
@@ -6,38 +7,16 @@ using Measures
 using JSON
 using BSON: load
 using Flux
+using Benchmarks: TP_loc
 
+include("utility.jl")
 
-function plot3dseries(tseries, title, t; legend=false)
-    l_b = legend ? true : nothing
-    plot3d(tseries[:,1], tseries[:,2],tseries[:,3], title=title, lc=(:viridis), linez=t, xlabel="X", ylabel="Y", zlabel="Z", label=nothing, legend=l_b)
-end
-
-# include("src/TimeAsInput.jl")
-# using .TimeAsInput
-Base.Float32(V::Vector{Float64}) = Base.Float32.(V)
-function convert_to_Float32(dict::Dict)
-    for (key, val) in dict
-        dict[key] = val isa AbstractFloat ? Float32(val) : val
-    end
-    return dict
-end
-load_model_(path::String) = load(path, @__MODULE__)[:model]
-
-function gen_at_t(plrnn::AbstractShallowPLRNN, t::Int, time::AbstractMatrix,og_data)
-    time_input = similar(time)
-    time_input .= time[t,1]
-    # maybe need to adjust load model
-    tseries = generate(plrnn, og_data[1,:],time_input, size(time_input,1))
-    return tseries
-end
-
-function evaluate_snapshots(Results_path::String, model_name::String, name::String, snapshots_path::String)
-    model_path = Results_path*model_name
-    args_path = Results_path*"args.json"
+function evaluate_snapshots(Results_path::String, model_name::String, name::String, snapshots_path::String; save_dir="")
+    model_path = Results_path * model_name
+    args_path = Results_path * "args.json"
 
     args = convert_to_Float32(JSON.parsefile(args_path))
-    model = load_model_(model_path)
+    model = load_model_(model_path)[1]
 
     og_data = npzread(args["path_to_data"])
     time_data = npzread(args["path_to_inputs"])
@@ -45,14 +24,14 @@ function evaluate_snapshots(Results_path::String, model_name::String, name::Stri
 
     ext_in = time_data
     println("generating...")
-    ts_0 = gen_at_t(model, 1, ext_in,og_data)
-    ts_T = gen_at_t(model, size(ext_in, 1), ext_in,og_data)
-    ts_a = generate(model, og_data[1,:], ext_in,size(ext_in,1))
+    ts_0 = gen_at_t(model, 1, ext_in, og_data)
+    ts_T = gen_at_t(model, size(ext_in, 1), ext_in, og_data)
+    ts_a = generate(model, og_data[1, :], ext_in, size(ext_in, 1))
     ts = [ts_0, ts_T, ts_a, og_data]
 
-    snap_path = snapshots_path*"snaps_$name"
-    snap_0 = npzread(snap_path*"_1.npy")
-    snap_T = npzread(snap_path*"_2.npy")
+    snap_path = snapshots_path * "snaps_$name"
+    snap_0 = npzread(snap_path * "_1.npy")
+    snap_T = npzread(snap_path * "_2.npy")
     og_stuff = [snap_0, snap_T, og_data]
 
     # # calculate klx when we have the proper data sets
@@ -66,12 +45,12 @@ function evaluate_snapshots(Results_path::String, model_name::String, name::Stri
     # Txt = ["klx = $(round(klx[i],digits=5))" for i in axes(klx,1)]
     # push!(Txt, "")
     println("plotting...")
-    ps = (plot3d(ts[i][1:end, 1], ts[i][1:end, 2], ts[i][1:end, 3], 
-            grid=:show, lc=cgrad(:viridis), line_z=1:1:size(ext_in,1), legend=nothing) 
-            #,annotations=((0.0,1.25), Txt[i])) 
-            for i in axes(ts, 1))
+    ps = (plot3d(ts[i][1:end, 1], ts[i][1:end, 2], ts[i][1:end, 3],
+        grid=:show, lc=cgrad(:viridis), line_z=1:1:size(ext_in, 1), legend=nothing)
+    #,annotations=((0.0,1.25), Txt[i])) 
+          for i in axes(ts, 1))
 
-    h2 = scatter([0, 0], [0, 1], line_z=1:1:size(ext_in,1),
+    h2 = scatter([0, 0], [0, 1], line_z=1:1:size(ext_in, 1),
         xlims=(1, 1.1), label=nothing, c=:viridis, colorbar_title="\ntime", framestyle=:none)
 
     l = @layout [grid(2, 2) a{0.035w}]
@@ -79,13 +58,11 @@ function evaluate_snapshots(Results_path::String, model_name::String, name::Stri
         title=["\nseries at t=0" "\nseries at t=T" "\ngenerated series" "\noriginal data" ""],
         plot_title="Stationary series at different t",
         right_margin=3.0Plots.mm)
-    mkpath("Figures/evaluation/")
-    savefig(p, "Figures/evaluation/$name _snapshots.png")
+    mkpath("Figures/evaluation/$save_dir")
+    savefig(p, "Figures/evaluation/$save_dir$name _snapshots.png")
     println("done!")
     return nothing
 end
-
-
 
 function compare_nlt_shallow(path::String)
     args = convert_to_Float32(JSON.parsefile(path * "compare1/args.json"))
@@ -135,7 +112,7 @@ function compare_nlt_shallow(path::String)
     savefig(comp_p, "Figures/evaluation/Compare_nlt_shallow_$run.png")
 end
 
-function check_around_snapshots(Results_path::String, model_name::String)
+function check_around_snapshots(Results_path::String, model_name::String; save_dir="")
     model_path = Results_path * model_name
     args_path = Results_path * "args.json"
 
@@ -156,11 +133,11 @@ function check_around_snapshots(Results_path::String, model_name::String)
         p_0 = plot3dseries(ts_0, nothing, ext_in)
         p_T = plot3dseries(ts_T, nothing, ext_in)
         p_c = plot(p_0, p_T, title=[title0 titleT], legend=nothing)
-        savefig(p_c, "snap_$i.png")
+        savefig(p_c, "$save_dir snap_$i.png")
     end
 end
 
-function eval_wo_ext(model_path::String, name::String, fig::String)
+function eval_wo_ext(model_path::String, name::String, fig::String; save_dir="")
     model = load_model_(model_path)
     og_data = npzread(args["path_to_data"])
     time_data = npzread(args["path_to_inputs"])
@@ -172,9 +149,8 @@ function eval_wo_ext(model_path::String, name::String, fig::String)
         ts = Matrix(gen_at_t(model, 1, time, og_data))
         plot3d!(ts[:, 1], ts[:, 2], ts[:, 3], label="$(round((i*0.2)/2,digits=1))")
     end
-    savefig(p, "Figures/evaluation/$fig _$name.png")
+    savefig(p, "Figures/evaluation/$save_dir$fig _$name.png")
 end
-    
 # -------------------------------------------------------------------------------------------
 # Evaluations
 
@@ -192,7 +168,7 @@ end
 # evaluate_snapshots("Results/external_inputs/ShrinkingLorenz_nlt/","pre_last.bson", "nltPLRNN_ShrinkingLorenz_2", "data/snapshots/")
 # evaluate_snapshots("Results/external_inputs/ShrinkingLorenz_nlt/","preprelast.bson", "nltPLRNN_ShrinkingLorenz_3", "data/snapshots/")
 
-evaluate_snapshots("Results/external_inputs/Paper_base/","model_5000.bson", "nlt_Paperlorenz", "data/snapshots/")
+# evaluate_snapshots("Results/external_inputs/Paper_base/","model_5000.bson", "nlt_Paperlorenz", "data/snapshots/")
 
 
 # evaluate_snapshots("Results/external_inputs/StopBurstBN_nlt_p1/","last_1.bson", "nltPLRNN_SBBN_p1", "data/snapshots/")
@@ -219,3 +195,20 @@ evaluate_snapshots("Results/external_inputs/Paper_base/","model_5000.bson", "nlt
 # eval_wo_ext("Results/external_inputs/StopBurstBN_nlt_unc/2850.bson", "StopBurstBN", "snapss")
 
 # generate trajectory at t=5 and make a 3d plot
+
+# evaluate christmas run
+master_env = setPlotEnv(design="master")
+# set_design("default")
+dir = "Results/christmas_run"
+runs = readdir(dir)
+snapshots_dir = "data/snapshots"
+
+for run in runs
+    run_dir = dir * "/" * run * "/"
+    model_name = readdir(run_dir)[2]
+    name = get_name(run)
+    evaluate_snapshots(run_dir, model_name, name, snapshots_dir, save_dir="christmas/")
+    # @log evaluate_snapshots run_dir model_name name snapshots_dir save_dir="christmas/"
+end
+
+

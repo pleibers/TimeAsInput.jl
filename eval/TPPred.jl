@@ -8,16 +8,7 @@ using BSON: load
 using Flux
 using Benchmarks: TP_loc
 
-
-Base.Float32(V::Vector{Float64}) = Base.Float32.(V)
-function convert_to_Float32(dict::Dict)
-    for (key, val) in dict
-        dict[key] = val isa AbstractFloat ? Float32(val) : val
-    end
-    return dict
-end
-load_model_(path::String) = load(path, @__MODULE__)[:model]
-
+include("utility.jl")
 function predict_TP(Results_path::String, model_name::String, name::String, data_system::String, TP_location::Int)
     model_path = Results_path * model_name
     args_path = Results_path * "args.json"
