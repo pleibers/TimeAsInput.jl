@@ -40,13 +40,13 @@ function get_name(run::String)
     end
 
     if contains(run, "Paper")
-        data = "paper"
+        data = "PaperLorenzBigChange"
     elseif contains(run, "StopBurstBN")
-        data = "Stop"
+        data = "StopBurstBN"
     end
 
-    name = "$(pm)_$(model)_$(hidden_dim)_$(lat_reg)_$(act_fun)_$(data)"
-    return name
+    name = "$(data)_$(model)_$(hidden_dim)_$(pm)_$(act_fun)_$(lat_reg)"
+    return name, data
 end
 
 
@@ -66,10 +66,10 @@ function convert_to_Float32(dict::Dict)
 end
 load_model_(path::String) = load(path, @__MODULE__)[:model]
 
-function gen_at_t(plrnn::AbstractShallowPLRNN, t::Int, time::AbstractMatrix, og_data)
+function gen_at_t(plrnn::AbstractShallowPLRNN, t::Int, time::AbstractMatrix, start)
     time_input = similar(time)
     time_input .= time[t, 1]
     # maybe need to adjust load model
-    tseries = generate(plrnn, og_data[1, :], time_input, size(time_input, 1))
+    tseries = generate(plrnn, start, time_input, size(time_input, 1))
     return tseries
 end
