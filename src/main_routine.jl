@@ -15,12 +15,20 @@ function main_training_routine(args::AbstractDict)
 
     # get computing device
     device = get_device(args)
-    if contains(args["path_to_data"], "Paper")
+    var = false
+    try 
+        args["optional_model_args"][1]
+        var = true
+    catch
+    end
+    if contains(args["path_to_data"], "Paper") && !var && args["model"] != "nltPLRNN"
         args["path_to_inputs"] = "data/time_data/time_PaperLorenzBigChange.npy"
         args["weak_tf_alpha"] = 0.1f0
-    elseif contains(args["path_to_data"], "Stop")
+        println("Attention: defaults were changed")
+    elseif contains(args["path_to_data"], "Stop") && !var && args["model"] != "nltPLRNN"
         args["path_to_inputs"] = "data/time_data/time_StopBurstBN.npy"
         args["weak_tf_alpha"] = 0.5f0
+        println("Attention: defaults were changed")
     end
     println(args["path_to_inputs"])
 
@@ -49,6 +57,7 @@ function main_training_routine(args::AbstractDict)
             D, D_test = train_test_split(D, TP_loc[get_model_from_path(args["path_to_data"])])
         end
     end
+
 
     run = args["run_anyway"] ? true : run
     if run

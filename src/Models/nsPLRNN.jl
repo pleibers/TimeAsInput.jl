@@ -1,4 +1,4 @@
-
+using StatsBase: sample
 mutable struct nswPLRNN{APM<:AbstractParameterModel,V<:AbstractVector,M<:AbstractMatrix,f<:Function} <: AbstractNSPLRNN
     A::V
     W₁ₜ::APM
@@ -37,22 +37,41 @@ end
 
 function get_params_at_T(m::nswPLRNN, time::AbstractVector)
     t = time[1]
-    return m.A, m.W₁ₜ(t), m.W₂ₜ(t), m.h₁, m.h₂
+    return [m.A, m.W₁ₜ(t), m.W₂ₜ(t), m.h₁, m.h₂]
+end
+function get_params_at_T(m::nswPLRNN, t::AbstractFloat)
+    return [m.A, m.W₁ₜ(t), m.W₂ₜ(t), m.h₁, m.h₂]
 end
 
 function update_var_param(m::nswPLRNN, params::AbstractVector)
     return [params[1], next_param(m.W₁ₜ, params[2]), next_param(m.W₂ₜ, params[3]), params[4], params[5]]
 end
 
-function BPTT.TFTraining.regularize(m::nswPLRNN, λ::Float32; penalty=l2_penalty)
-    W₁_reg_1 = @views penalty(derivative(m.W₁ₜ, m.t))
-    W₂_reg_1 = @views penalty(derivative(m.W₂ₜ, m.t))
+function ns_step(z::AbstractVector, params::Vector{Array{T}}, Φ::Function) where {T}
+    A, W₁, W₂, h₁, h₂ = params
+    return A .* z .+ W₁ * Φ.(W₂ * z .+ h₂) .+ h₁
+end
 
-    W₁_reg_2 = @views penalty(second_derivative(m.W₁ₜ, m.t))
-    W₂_reg_2 = @views penalty(second_derivative(m.W₂ₜ, m.t))
+function BPTT.TFTraining.regularize(m::nswPLRNN, λ::Float32; penalty=l2_penalty)
+    t = sample(m.t, 100, replace=false)
+    W₁_reg_1 = @views penalty(derivative(m.W₁ₜ, t))
+    W₂_reg_1 = @views penalty(derivative(m.W₂ₜ, t))
+
+    W₁_reg_2 = @views penalty(second_derivative(m.W₁ₜ, t))
+    W₂_reg_2 = @views penalty(second_derivative(m.W₂ₜ, t))
     λ₁ = λ
     return λ₁ * (W₁_reg_1 + W₂_reg_1 + W₁_reg_2 + W₂_reg_2)
 end
+
+# function BPTT.TFTraining.regularize(m::nswPLRNN, λ::Float32; penalty=l2_penalty)
+#     W₁_reg_1 = @views penalty(derivative(m.W₁ₜ, m.t))
+#     W₂_reg_1 = @views penalty(derivative(m.W₂ₜ, m.t))
+
+#     W₁_reg_2 = @views penalty(second_derivative(m.W₁ₜ, m.t))
+#     W₂_reg_2 = @views penalty(second_derivative(m.W₂ₜ, m.t))
+#     λ₁ = λ
+#     return λ₁ * (W₁_reg_1 + W₂_reg_1 + W₁_reg_2 + W₂_reg_2)
+# end
 
 
 mutable struct nsPLRNN{APM<:AbstractParameterModel,V<:AbstractVector,M<:AbstractMatrix,f<:Function} <: AbstractNSPLRNN
@@ -96,10 +115,10 @@ function get_params_at_T(m::nsPLRNN, time::AbstractVector)
     return m.A, m.W₁, m.W₂ₜ(t), m.h₁, m.h₂
 end
 
-function BPTT.TFTraining.regularize(m::nsPLRNN, λ::Float32; penalty=l2_penalty)
-    W₂_reg_1 = @views penalty(derivative(m.W₂ₜ, m.t))
+# function BPTT.TFTraining.regularize(m::nsPLRNN, λ::Float32; penalty=l2_penalty)
+#     W₂_reg_1 = @views penalty(derivative(m.W₂ₜ, m.t))
 
-    W₂_reg_2 = @views penalty(second_derivative(m.W₂ₜ, m.t))
-    λ₁ = λ
-    return λ₁ *  W₂_reg_1  * W₂_reg_2
-end
+#     W₂_reg_2 = @views penalty(second_derivative(m.W₂ₜ, m.t))
+#     λ₁ = λ
+#     return λ₁ *  W₂_reg_1  * W₂_reg_2
+# end

@@ -89,29 +89,30 @@ function second_derivative(m::MLPParameterModel, time::AbstractFloat)
     return hessian(f, time)
 end
 
-mutable struct VARParameterModel{M<:AbstractMatrix} <: AbstractParameterModel
-    P₀::M
+mutable struct VARParameterModel{M<:AbstractMatrix, MV<:AbstractVecOrMat} <: AbstractParameterModel
+    P₀::MV
     R::M
-    B::M
+    B::MV
 end
 @functor VARParameterModel
 
 function var(θ::AbstractVecOrMat)
     P₀ = θ
-    R = uniform_init(size(θ,1), size(θ,1))
-    B = uniform_init(size(θ,1))
+    R = Matrix{Float32}(1.0I, size(θ,1), size(θ,1))
+    B = zeros(Float32,size(θ))
     return VARParameterModel(P₀, R, B)
 end
 
-function param_at_T(m::VARParameterModel, t::Int64)
+function param_at_T(m::VARParameterModel, time::AbstractFloat)
+    t = Int(time)
     if m.R == I
-        Pt = m.R^t .* m.P₀' .+ t * m.R^(t - 1) .* m.B
+        Pt = m.R^t * m.P₀ .+ t * m.R^(t - 1) * m.B
     else
-        Pt = (I - m.R^t) * inv(I - m.R) .* m.B .+ m.R^t .* m.P₀'
+        Pt = (I - m.R^t) * inv(I - m.R) * m.B .+ m.R^t * m.P₀
     end
     return Pt
 end
 
 function next_param(m::VARParameterModel,pt::AbstractVecOrMat)
-    return m.R * p .+ m.B
+    return m.R * pt .+ m.B
 end

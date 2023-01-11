@@ -39,11 +39,6 @@ function BPTT.PLRNNs.step(m::ptPLRNN, z::AbstractMatrix, time::AbstractMatrix)
     return reduce(hcat, z)
 end
 
-function ns_step(z::AbstractVector, params::Tuple{T,S,S,T,T}, Φ::Function) where {T,S}
-    A, W₁, W₂, h₁, h₂ = params
-    return A .* z .+ W₁ * Φ.(W₂ * z .+ h₂) .+ h₁
-end
-
 function get_params_at_T(m::ptPLRNN, time::AbstractVector)
     t = time[1]
     return m.Aₜ(t), m.W₁ₜ(t), m.W₂ₜ(t), m.h₁ₜ(t), m.h₂ₜ(t)
