@@ -26,4 +26,18 @@ function main()
     npzwrite("data/time_data/realtime_$name.npy", t)
 end
 
-main()
+# main()
+dir = "data/time_data/"
+times = readdir(dir)
+times = filter(x->!contains(x,"realtime_"),times)
+times = filter(x -> !contains(x, "tp_"), times)
+
+for set in times
+    data = npzread(dir*set)
+    len = size(data,1)
+    tp = 1:len
+    set = replace(set,"time_"=>"")
+    tp = reshape(tp,size(data))
+    npzwrite(dir*"tp_"*set, tp)
+end
+
